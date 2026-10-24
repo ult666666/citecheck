@@ -1,0 +1,52 @@
+name: Release
+
+# Builds the wheel and sdist from a version tag, smoke-tests the wheel in a
+# clean environment, and attaches both with SHA-256 checksums to the GitHub
+# release. Run it by hand to (re)build the assets of an existing tag.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build, e.g. v0.1.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: astral-sh/setup-uv@v10.3.2
+      - name: Check the tag matches the package version
+        run: |
+          version=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error::Tag $TAG does not match package version $version"
+            exit 1
+          fi
+      - name: Build the wheel and sdist
+        run: uv build
+      - name: Smoke-test the wheel in a clean environment
+        run: |
+          uv venv --python 3.12 "$RUNNER_TEMP/smoke"
+          uv pip install --python "$RUNNER_TEMP/smoke/bin/python" dist/*.whl
+          "$RUNNER_TEMP/smoke/bin/citecheck" --help
+      - name: Write checksums
+        working-directory: dist
+        run: sha256sum -- * > SHA256SUMS.txt
+      - name: Attach the assets to the release
+        run: |
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes
+          fi
+          gh release upload "$TAG" dist/* --clobber
