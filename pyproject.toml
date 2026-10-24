@@ -61,10 +61,12 @@ build-backend = "uv_build"
 
 [dependency-groups]
 # fastapi and uvicorn are repeated here so that a plain `uv sync` gives a
-# development environment that can run the API tests.
+# development environment that can run the API tests. httpx2 (the anthropic
+# SDK's own HTTP library) is imported by tests that build SDK error objects.
 dev = [
     "fastapi>=0.162.0",
     "httpx>=0.28.1",
+    "httpx2>=2.16.0",
     "hypothesis>=6.170.9",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
@@ -111,6 +113,8 @@ warn_unreachable = true
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
+# Lets test modules import shared doubles from tests/helpers.py.
+pythonpath = ["."]
 addopts = [
     "--strict-markers",
     "--strict-config",
