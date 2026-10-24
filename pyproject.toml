@@ -1,0 +1,133 @@
+[project]
+name = "citecheck"
+version = "0.1.0"
+description = "Question answering over your documents where every sentence cites a retrieved passage, and a checker flags the claims the sources do not support."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Charles Dai" }]
+requires-python = ">=3.12"
+keywords = [
+    "rag",
+    "retrieval-augmented-generation",
+    "citations",
+    "grounding",
+    "fact-checking",
+    "sqlite",
+    "fts5",
+    "bm25",
+    "claude",
+    "llm-evaluation",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Indexing",
+    "Typing :: Typed",
+]
+dependencies = [
+    "anthropic>=2.3.0",
+]
+
+[project.optional-dependencies]
+# The JSON endpoint and HTML page. The CLI and library work without them.
+api = [
+    "fastapi>=0.162.0",
+    "uvicorn>=0.54.0",
+]
+
+[project.scripts]
+citecheck = "citecheck.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ult666666/citecheck"
+Repository = "https://github.com/ult666666/citecheck"
+Issues = "https://github.com/ult666666/citecheck/issues"
+Changelog = "https://github.com/ult666666/citecheck/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/ult666666/citecheck/blob/main/docs/DESIGN.md"
+
+[build-system]
+requires = ["uv_build>=0.11.29,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+# fastapi and uvicorn are repeated here so that a plain `uv sync` gives a
+# development environment that can run the API tests.
+dev = [
+    "fastapi>=0.162.0",
+    "httpx>=0.28.1",
+    "hypothesis>=6.170.9",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.17.2",
+    "uvicorn>=0.54.0",
+]
+
+[tool.ruff]
+line-length = 99
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "D",   # pydocstyle
+    "N",   # pep8-naming
+    "PT",  # flake8-pytest-style
+    "RUF", # ruff-specific rules
+    "S",   # flake8-bandit (security)
+    "SIM", # flake8-simplify
+    "UP",  # pyupgrade
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests use assert by design and do not need docstrings on every helper.
+"tests/**" = ["D", "S101"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src", "tests"]
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--import-mode=importlib",
+]
+xfail_strict = true
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+source = ["citecheck"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

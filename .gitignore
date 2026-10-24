@@ -1,0 +1,36 @@
+# Python bytecode and packaging output
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+
+# Tool caches
+.hypothesis/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Coverage output
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# citecheck search indexes (rebuilt with `citecheck index`)
+.citecheck/
+*.sqlite
+*.sqlite-journal
+*.db
+
+# Secrets: never commit API keys
+.env
+.env.*
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
