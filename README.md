@@ -58,8 +58,17 @@ verdict can be verified by hand, and its blind spots are measured rather than hi
 
 ## Quick start
 
-Requires Python 3.12 or newer and [uv](https://docs.astral.sh/uv/). Run the commands from the
-repository root.
+To index and search your own `.md` and `.txt` files, install the CLI from the GitHub release (Python 3.12+):
+
+```bash
+pip install https://github.com/ult666666/citecheck/releases/download/v0.1.0/citecheck-0.1.0-py3-none-any.whl
+citecheck index path/to/docs
+citecheck search "your question"
+```
+
+Outside a clone, `ask` needs `--live` and your own API key (see [Live mode](#live-mode-with-your-own-key)): offline answers replay the repository's recorded fixtures.
+
+To try the whole pipeline offline on the bundled handbook, clone the repository. This requires Python 3.12 or newer and [uv](https://docs.astral.sh/uv/); run the commands from the repository root.
 
 ```bash
 git clone https://github.com/ult666666/citecheck.git
