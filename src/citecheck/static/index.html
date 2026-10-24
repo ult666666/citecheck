@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>citecheck</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --fg: #1a1a1a;
+      --bg: #ffffff;
+      --muted: #4a4a4a;
+      --border: #767676;
+      --supported: #0b6b2e;
+      --weak: #7a4b00;
+      --unsupported: #a3141e;
+      --focus: #1d4ed8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #f2f2f2;
+        --bg: #121212;
+        --muted: #c8c8c8;
+        --border: #9a9a9a;
+        --supported: #6ee79a;
+        --weak: #f5c45e;
+        --unsupported: #ff8a8a;
+        --focus: #93b4ff;
+      }
+    }
+    body {
+      margin: 0 auto;
+      max-width: 48rem;
+      padding: 1rem;
+      font: 1rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: var(--fg);
+      background: var(--bg);
+    }
+    label { display: block; font-weight: 600; }
+    textarea {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 0.5rem;
+      font: inherit;
+      color: inherit;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    button {
+      padding: 0.5rem 1.25rem;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .muted { color: var(--muted); }
+    .label { font-weight: 700; }
+    .label.supported { color: var(--supported); }
+    .label.weakly_supported { color: var(--weak); }
+    .label.unsupported { color: var(--unsupported); }
+    #sentences li { margin-bottom: 0.75rem; }
+    #sentences p { margin: 0.1rem 0; }
+    .passage { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>citecheck</h1>
+    <p>Ask a question about the indexed documents. Each sentence of the answer cites a
+      retrieved passage and is labeled by how well its cited passages support it.</p>
+    <p id="mode" class="muted"></p>
+  </header>
+  <main>
+    <form id="ask-form">
+      <label for="question">Question</label>
+      <textarea id="question" name="question" rows="3" maxlength="2000" required
+        aria-describedby="question-hint"></textarea>
+      <p id="question-hint" class="muted">In fixture mode only the prepared demo questions have
+        responses (listed in eval/questions.json).</p>
+      <button type="submit">Ask</button>
+    </form>
+    <section aria-labelledby="result-heading">
+      <h2 id="result-heading">Result</h2>
+      <div id="status" role="status" aria-live="polite"></div>
+      <ol id="sentences"></ol>
+      <h3>Passages offered to the model</h3>
+      <ul id="passages"></ul>
+    </section>
+  </main>
+  <script>
+    "use strict";
+    const LABELS = {
+      supported: "Supported",
+      weakly_supported: "Weakly supported",
+      unsupported: "Unsupported",
+    };
+    const form = document.getElementById("ask-form");
+    const statusEl = document.getElementById("status");
+    const sentencesEl = document.getElementById("sentences");
+    const passagesEl = document.getElementById("passages");
+
+    // Every value from the server is inserted with textContent, never as HTML.
+    function el(tag, text, className) {
+      const node = document.createElement(tag);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    }
+
+    fetch("/healthz")
+      .then((response) => response.json())
+      .then((info) => {
+        const mode = info.mode === "fixture"
+          ? "fixture replay (hand-written synthetic responses, not a real model)"
+          : "live model";
+        document.getElementById("mode").textContent =
+          `${info.documents} documents (${info.chunks} chunks) indexed. Responses: ${mode}.`;
+      })
+      .catch(() => {});
+
+    function render(data) {
+      if (data.status === "abstained") {
+        statusEl.textContent = `No answer: ${data.abstain_reason}.`;
+      } else {
+        const c = data.label_counts;
+        const kind = data.status === "partial" ? "Partial answer" : "Answer";
+        statusEl.textContent = `${kind}: ${c.supported} supported, ` +
+          `${c.weakly_supported} weakly supported, ${c.unsupported} unsupported.`;
+      }
+      for (const sentence of data.sentences) {
+        const item = el("li");
+        item.append(el("p", sentence.text));
+        const verdict = el("p");
+        verdict.append(el("span", LABELS[sentence.label] || sentence.label,
+          `label ${sentence.label}`));
+        verdict.append(document.createTextNode(`: ${sentence.reason}`));
+        item.append(verdict);
+        if (sentence.citations.length) {
+          item.append(el("p", `Cites: ${sentence.citations.join(", ")}`, "muted"));
+        }
+        sentencesEl.append(item);
+      }
+      for (const passage of data.passages) {
+        const item = el("li");
+        item.append(el("strong", passage.chunk_id));
+        item.append(document.createTextNode(
+          ` (score ${passage.score.toFixed(2)}, lines ${passage.start_line}-${passage.end_line})`));
+        const details = el("details");
+        details.append(el("summary", passage.title));
+        details.append(el("p", passage.text, "passage"));
+        item.append(details);
+        passagesEl.append(item);
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const question = document.getElementById("question").value.trim();
+      if (!question) return;
+      const button = form.querySelector("button");
+      button.disabled = true;
+      statusEl.textContent = "Checking...";
+      sentencesEl.replaceChildren();
+      passagesEl.replaceChildren();
+      try {
+        const response = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          const detail = typeof data.detail === "string" ? data.detail : response.statusText;
+          statusEl.textContent = `Error: ${detail}`;
+          return;
+        }
+        render(data);
+      } catch (error) {
+        statusEl.textContent = `Error: ${error}`;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
