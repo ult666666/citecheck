@@ -105,3 +105,30 @@ def test_no_absolute_home_paths_in_tracked_text() -> None:
         path = Path(REPO_ROOT / name)
         if path.exists():
             assert home_prefix not in path.read_text(encoding="utf-8"), name
+
+
+def test_the_numbers_behind_the_default_threshold(index: Index) -> None:
+    # docs/DESIGN.md explains min_score = 3.0 with these scores.
+    questions = load_questions(QUESTIONS)
+    gold_scores = []
+    for question in questions:
+        if question.answerable:
+            result = retrieve(index, question.question, k=5, min_score=0.0)
+            gold_scores += [
+                c.score for c in result.candidates if c.chunk_id in question.gold_chunks
+            ]
+    assert len(gold_scores) == 31  # every gold chunk is in the top 5
+    assert round(min(gold_scores), 2) == 5.49
+    name_only = retrieve(index, "What is Larkmoor's stock ticker symbol?", k=5, min_score=0.0)
+    assert round(name_only.candidates[0].score, 2) == 2.07
+    rare_word = retrieve(
+        index, "What is the weather like in Pittsburgh today?", k=5, min_score=0.0
+    )
+    assert [round(c.score, 2) for c in rare_word.candidates] == [4.17]
+
+
+def test_porter_stemming_conflates_international_and_internal(index: Index) -> None:
+    # The example quoted in docs/DESIGN.md: both words stem to "intern".
+    results = index.search('"international"', limit=5)
+    assert [r.chunk_id for r in results] == ["workplace/communication.md#focus-thursdays"]
+    assert "internal" in results[0].text
