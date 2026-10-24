@@ -13,8 +13,6 @@ from typing import Any
 import anthropic
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-
 CorpusFactory = Callable[[dict[str, str]], Path]
 
 

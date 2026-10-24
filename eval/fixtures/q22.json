@@ -1,0 +1,21 @@
+{
+  "synthetic": true,
+  "question_id": "q22",
+  "question": "How many approvals does a change to billing code need?",
+  "note": "Deliberate extra citation to a chunk ID that does not exist; it is rejected, but the sentence keeps its valid citation and stays supported.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "A change to billing code needs two approvals, and at least one of them must come from the team that owns the code.",
+        "citations": [
+          "engineering/code-review.md#approval-rules",
+          "engineering/code-review.md#billing-changes"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q21",
+  "question": "How long does access to production customer data last?",
+  "note": "Faithful answer; the gold chunk was retrieved at rank 5.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Access to production customer data is granted for at most 72 hours and is then revoked automatically.",
+        "citations": [
+          "security/customer-data-access.md#time-limits"
+        ]
+      },
+      {
+        "text": "If you need more time, open a new ticket.",
+        "citations": [
+          "security/customer-data-access.md#time-limits"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

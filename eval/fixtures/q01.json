@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q01",
+  "question": "How many unused PTO days carry over into the next year?",
+  "note": "Faithful answer copied closely from one passage.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Up to 5 unused PTO days carry over into the next calendar year.",
+        "citations": [
+          "people/time-off.md#carryover"
+        ]
+      },
+      {
+        "text": "Carried-over days must be used by March 31, and any that remain after that date expire.",
+        "citations": [
+          "people/time-off.md#carryover"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

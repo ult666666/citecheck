@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "question_id": "u06",
+  "question": "What is the deductible for dental insurance?",
+  "note": "Correct abstention: dental coverage is mentioned, but no deductible.",
+  "answer": {
+    "sentences": [],
+    "insufficient_evidence": true
+  },
+  "expected_labels": []
+}

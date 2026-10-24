@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q13",
+  "question": "What is the deadline for submitting an expense?",
+  "note": "Deliberate hallucination: sentence 2 invents a 60-day rule that no passage states; the number check catches it.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Submit business expenses in the expense tool within 30 days of the purchase date.",
+        "citations": [
+          "workplace/expenses.md#submitting-expenses"
+        ]
+      },
+      {
+        "text": "Expenses submitted after 60 days are rejected automatically.",
+        "citations": [
+          "workplace/expenses.md#submitting-expenses"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "unsupported"
+  ]
+}

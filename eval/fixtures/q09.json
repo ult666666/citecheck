@@ -1,0 +1,20 @@
+{
+  "synthetic": true,
+  "question_id": "q09",
+  "question": "When are promotions decided?",
+  "note": "Faithful one-sentence answer.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Promotions are decided only in the October cycle.",
+        "citations": [
+          "people/performance-reviews.md#promotions"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported"
+  ]
+}

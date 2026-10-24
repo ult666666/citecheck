@@ -1,0 +1,41 @@
+{
+  "synthetic": true,
+  "question_id": "q03",
+  "question": "Do I need a doctor's note when I take a sick day?",
+  "note": "Deliberate negation flip: sentence 1 says the opposite of the passage but reuses its words, so the lexical checker cannot see the error (a known limit). The judge fixture shows how an entailment judge would catch it.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "A doctor's note is not required for absences of more than 3 consecutive sick days.",
+        "citations": [
+          "people/time-off.md#sick-leave"
+        ]
+      },
+      {
+        "text": "Sick days are separate from PTO.",
+        "citations": [
+          "people/time-off.md#sick-leave"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "unsupported",
+    "supported"
+  ],
+  "judge": {
+    "verdicts": [
+      {
+        "sentence": 1,
+        "verdict": "not_supported",
+        "reason": "The passage says a doctor's note is required for absences of more than 3 consecutive sick days; the sentence says the opposite."
+      },
+      {
+        "sentence": 2,
+        "verdict": "supported",
+        "reason": "The passage states that sick days are separate from PTO."
+      }
+    ]
+  }
+}

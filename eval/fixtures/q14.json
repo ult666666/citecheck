@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q14",
+  "question": "When do I need a receipt for an expense?",
+  "note": "Faithful answer.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Attach an itemized receipt for every expense of $25 or more.",
+        "citations": [
+          "workplace/expenses.md#receipts"
+        ]
+      },
+      {
+        "text": "For expenses under $25, a receipt is recommended but not required.",
+        "citations": [
+          "workplace/expenses.md#receipts"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q19",
+  "question": "I lost my company laptop on a trip. Who do I tell, and how quickly?",
+  "note": "Deliberate citation typo: sentence 2 cites 'security/device.md' instead of 'security/devices.md', so its only citation is rejected and it is unsupported.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Report a lost or stolen laptop to the security team within 1 hour.",
+        "citations": [
+          "security/devices.md#lost-or-stolen-devices"
+        ]
+      },
+      {
+        "text": "You can report it through the security help channel or the IT hotline.",
+        "citations": [
+          "security/device.md#lost-or-stolen-devices"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "unsupported"
+  ]
+}

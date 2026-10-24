@@ -1,0 +1,20 @@
+{
+  "synthetic": true,
+  "question_id": "q24",
+  "question": "How quickly must an on-call engineer acknowledge a page, and what is the on-call stipend?",
+  "note": "Deliberately partial: the answer covers the acknowledgement time and wrongly flags insufficient evidence for the stipend, which was retrieved. Status is 'partial' and citation recall loses one gold chunk.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "An on-call engineer must acknowledge a page within 5 minutes.",
+        "citations": [
+          "engineering/on-call.md#responding-to-pages"
+        ]
+      }
+    ],
+    "insufficient_evidence": true
+  },
+  "expected_labels": [
+    "supported"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "question_id": "q28",
+  "question": "How soon is customer data deleted after a contract ends?",
+  "note": "Deliberate false abstention: the passage answers the question, but the response reports insufficient evidence.",
+  "answer": {
+    "sentences": [],
+    "insufficient_evidence": true
+  },
+  "expected_labels": []
+}

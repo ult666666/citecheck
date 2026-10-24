@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q12",
+  "question": "How long can I work from another country?",
+  "note": "Faithful answer.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "You may work from another country for up to 20 working days per calendar year with approval from the People team.",
+        "citations": [
+          "workplace/remote-work.md#working-from-another-country"
+        ]
+      },
+      {
+        "text": "Longer stays need a legal and tax review before they can be approved.",
+        "citations": [
+          "workplace/remote-work.md#working-from-another-country"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

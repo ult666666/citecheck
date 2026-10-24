@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q04",
+  "question": "How long is paid parental leave, and when does an employee become eligible?",
+  "note": "Two gold chunks, each cited by the sentence it supports.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Eligible employees receive 16 weeks of parental leave at full pay.",
+        "citations": [
+          "people/parental-leave.md#leave-length-and-pay"
+        ]
+      },
+      {
+        "text": "Employees become eligible after 90 days of employment.",
+        "citations": [
+          "people/parental-leave.md#eligibility"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

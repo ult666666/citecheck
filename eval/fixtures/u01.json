@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "question_id": "u01",
+  "question": "How much PTO do part-time employees get?",
+  "note": "Correct abstention: the policy only covers full-time employees.",
+  "answer": {
+    "sentences": [],
+    "insufficient_evidence": true
+  },
+  "expected_labels": []
+}

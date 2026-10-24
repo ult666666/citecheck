@@ -1,0 +1,316 @@
+{
+  "description": "Labeled questions for citecheck's demo evaluation over the fictional Larkmoor Analytics handbook in examples/handbook. Written by hand for this project.",
+  "questions": [
+    {
+      "id": "q01",
+      "question": "How many unused PTO days carry over into the next year?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/time-off.md#carryover"
+      ],
+      "notes": "Single-chunk lookup with a number."
+    },
+    {
+      "id": "q02",
+      "question": "How far in advance do I need to request PTO for an absence longer than three days?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/time-off.md#requesting-time-off"
+      ],
+      "notes": "Number and condition."
+    },
+    {
+      "id": "q03",
+      "question": "Do I need a doctor's note when I take a sick day?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/time-off.md#sick-leave"
+      ],
+      "notes": "Fixture contains a negation flip the lexical checker cannot see."
+    },
+    {
+      "id": "q04",
+      "question": "How long is paid parental leave, and when does an employee become eligible?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/parental-leave.md#leave-length-and-pay",
+        "people/parental-leave.md#eligibility"
+      ],
+      "notes": "Two gold chunks in one document."
+    },
+    {
+      "id": "q05",
+      "question": "When does health insurance coverage start for a new employee?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/benefits.md#health-insurance"
+      ],
+      "notes": "Single-chunk lookup."
+    },
+    {
+      "id": "q06",
+      "question": "How much does Larkmoor match on 401(k) contributions?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/benefits.md#retirement-plan"
+      ],
+      "notes": "Query with punctuation inside a token: 401(k)."
+    },
+    {
+      "id": "q07",
+      "question": "What is the annual learning budget, and does unused budget roll over?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/learning-budget.md#annual-budget"
+      ],
+      "notes": "Two facts from one chunk."
+    },
+    {
+      "id": "q08",
+      "question": "For an approved conference in London, which budget pays the registration fee, which pays the hotel, and what is the nightly hotel limit?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/learning-budget.md#conferences",
+        "workplace/travel.md#hotels"
+      ],
+      "notes": "Multi-document question; fixture over-cites one extra passage."
+    },
+    {
+      "id": "q09",
+      "question": "When are promotions decided?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/performance-reviews.md#promotions"
+      ],
+      "notes": "Short question."
+    },
+    {
+      "id": "q10",
+      "question": "What is the limit on gifts from vendors?",
+      "answerable": true,
+      "gold_chunks": [
+        "people/code-of-conduct.md#gifts-from-vendors"
+      ],
+      "notes": "Single-chunk lookup with an amount."
+    },
+    {
+      "id": "q11",
+      "question": "Which days do hybrid employees work in the office?",
+      "answerable": true,
+      "gold_chunks": [
+        "workplace/remote-work.md#hybrid-schedule"
+      ],
+      "notes": "Single-chunk lookup."
+    },
+    {
+      "id": "q12",
+      "question": "How long can I work from another country?",
+      "answerable": true,
+      "gold_chunks": [
+        "workplace/remote-work.md#working-from-another-country"
+      ],
+      "notes": "Single-chunk lookup with a condition."
+    },
+    {
+      "id": "q13",
+      "question": "What is the deadline for submitting an expense?",
+      "answerable": true,
+      "gold_chunks": [
+        "workplace/expenses.md#submitting-expenses"
+      ],
+      "notes": "Fixture adds a hallucinated sentence with an invented number."
+    },
+    {
+      "id": "q14",
+      "question": "When do I need a receipt for an expense?",
+      "answerable": true,
+      "gold_chunks": [
+        "workplace/expenses.md#receipts"
+      ],
+      "notes": "Threshold amount."
+    },
+    {
+      "id": "q15",
+      "question": "Can I fly premium economy on a long flight?",
+      "answerable": true,
+      "gold_chunks": [
+        "workplace/travel.md#flights"
+      ],
+      "notes": "Fixture paraphrases faithfully with different words (checker false flag)."
+    },
+    {
+      "id": "q16",
+      "question": "What happens if I lose my office badge?",
+      "answerable": true,
+      "gold_chunks": [
+        "workplace/office.md#lost-badges"
+      ],
+      "notes": "Fixture states a wrong replacement fee."
+    },
+    {
+      "id": "q17",
+      "question": "Who needs to approve a $5,000 purchase?",
+      "answerable": true,
+      "gold_chunks": [
+        "workplace/procurement.md#approval-limits"
+      ],
+      "notes": "Range lookup; fixture adds an uncited sentence."
+    },
+    {
+      "id": "q18",
+      "question": "Are SMS codes allowed for multi-factor authentication?",
+      "answerable": true,
+      "gold_chunks": [
+        "security/passwords-and-mfa.md#multi-factor-authentication"
+      ],
+      "notes": "Yes/no answer."
+    },
+    {
+      "id": "q19",
+      "question": "I lost my company laptop on a trip. Who do I tell, and how quickly?",
+      "answerable": true,
+      "gold_chunks": [
+        "security/devices.md#lost-or-stolen-devices"
+      ],
+      "notes": "Fixture has one citation with a typo in the chunk ID."
+    },
+    {
+      "id": "q20",
+      "question": "What should I do if I clicked a link in a phishing email?",
+      "answerable": true,
+      "gold_chunks": [
+        "security/phishing.md#if-you-clicked"
+      ],
+      "notes": "Procedure question."
+    },
+    {
+      "id": "q21",
+      "question": "How long does access to production customer data last?",
+      "answerable": true,
+      "gold_chunks": [
+        "security/customer-data-access.md#time-limits"
+      ],
+      "notes": "Single-chunk lookup."
+    },
+    {
+      "id": "q22",
+      "question": "How many approvals does a change to billing code need?",
+      "answerable": true,
+      "gold_chunks": [
+        "engineering/code-review.md#approval-rules"
+      ],
+      "notes": "Fixture adds a citation to a chunk ID that does not exist."
+    },
+    {
+      "id": "q23",
+      "question": "Can we deploy to production on a Friday?",
+      "answerable": true,
+      "gold_chunks": [
+        "engineering/deployments.md#deployment-windows"
+      ],
+      "notes": "Rule with an exception."
+    },
+    {
+      "id": "q24",
+      "question": "How quickly must an on-call engineer acknowledge a page, and what is the on-call stipend?",
+      "answerable": true,
+      "gold_chunks": [
+        "engineering/on-call.md#responding-to-pages",
+        "engineering/on-call.md#compensation"
+      ],
+      "notes": "Fixture answers only half and flags insufficient evidence (partial)."
+    },
+    {
+      "id": "q25",
+      "question": "Can we use AGPL-licensed libraries in a product we ship to customers?",
+      "answerable": true,
+      "gold_chunks": [
+        "engineering/open-source.md#using-open-source-software"
+      ],
+      "notes": "License rule."
+    },
+    {
+      "id": "q26",
+      "question": "Which WCAG level must customer-facing products meet?",
+      "answerable": true,
+      "gold_chunks": [
+        "engineering/accessibility.md#target"
+      ],
+      "notes": "Acronym-heavy query."
+    },
+    {
+      "id": "q27",
+      "question": "What are the core hours?",
+      "answerable": true,
+      "gold_chunks": [
+        "workplace/remote-work.md#core-hours"
+      ],
+      "notes": "Very short query."
+    },
+    {
+      "id": "q28",
+      "question": "How soon is customer data deleted after a contract ends?",
+      "answerable": true,
+      "gold_chunks": [
+        "security/data-retention.md#customer-data"
+      ],
+      "notes": "Fixture wrongly abstains (false abstention)."
+    },
+    {
+      "id": "u01",
+      "question": "How much PTO do part-time employees get?",
+      "answerable": false,
+      "gold_chunks": [],
+      "notes": "In-domain gap: the policy only covers full-time employees."
+    },
+    {
+      "id": "u02",
+      "question": "What is the meal per diem for international trips?",
+      "answerable": false,
+      "gold_chunks": [],
+      "notes": "In-domain gap: only the domestic per diem is stated; fixture answers anyway."
+    },
+    {
+      "id": "u03",
+      "question": "What is Larkmoor's stock ticker symbol?",
+      "answerable": false,
+      "gold_chunks": [],
+      "notes": "Out of domain; only the company name matches."
+    },
+    {
+      "id": "u04",
+      "question": "Who founded Larkmoor Analytics?",
+      "answerable": false,
+      "gold_chunks": [],
+      "notes": "Out of domain."
+    },
+    {
+      "id": "u05",
+      "question": "Is there a dress code for the office?",
+      "answerable": false,
+      "gold_chunks": [],
+      "notes": "Out of domain, but 'code' and 'office' match unrelated chunks."
+    },
+    {
+      "id": "u06",
+      "question": "What is the deductible for dental insurance?",
+      "answerable": false,
+      "gold_chunks": [],
+      "notes": "In-domain gap: dental coverage exists but no deductible is stated."
+    },
+    {
+      "id": "u07",
+      "question": "What is it?",
+      "answerable": false,
+      "gold_chunks": [],
+      "notes": "No searchable words at all."
+    },
+    {
+      "id": "u08",
+      "question": "What is the weather like in Pittsburgh today?",
+      "answerable": false,
+      "gold_chunks": [],
+      "notes": "Out of domain; 'Pittsburgh' matches the offices chunk."
+    }
+  ]
+}

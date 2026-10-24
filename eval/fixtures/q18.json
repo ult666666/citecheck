@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q18",
+  "question": "Are SMS codes allowed for multi-factor authentication?",
+  "note": "Faithful answer; sentence 1 scores exactly at the supported threshold (4 of 5 words, because 'no' is not in the passage).",
+  "answer": {
+    "sentences": [
+      {
+        "text": "No, SMS codes are not allowed.",
+        "citations": [
+          "security/passwords-and-mfa.md#multi-factor-authentication"
+        ]
+      },
+      {
+        "text": "App-based codes are acceptable, and hardware security keys are required for production systems and administrator accounts.",
+        "citations": [
+          "security/passwords-and-mfa.md#multi-factor-authentication"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

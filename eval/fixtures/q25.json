@@ -1,0 +1,20 @@
+{
+  "synthetic": true,
+  "question_id": "q25",
+  "question": "Can we use AGPL-licensed libraries in a product we ship to customers?",
+  "note": "Faithful answer.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "No, AGPL-licensed code may not be used in products shipped to customers.",
+        "citations": [
+          "engineering/open-source.md#using-open-source-software"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported"
+  ]
+}

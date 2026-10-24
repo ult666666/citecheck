@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q07",
+  "question": "What is the annual learning budget, and does unused budget roll over?",
+  "note": "Faithful answer with two facts from one chunk.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Each employee has a learning budget of $1,500 per calendar year.",
+        "citations": [
+          "people/learning-budget.md#annual-budget"
+        ]
+      },
+      {
+        "text": "Unused budget does not roll over into the next year.",
+        "citations": [
+          "people/learning-budget.md#annual-budget"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

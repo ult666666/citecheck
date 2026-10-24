@@ -1,0 +1,35 @@
+{
+  "synthetic": true,
+  "question_id": "q08",
+  "question": "For an approved conference in London, which budget pays the registration fee, which pays the hotel, and what is the nightly hotel limit?",
+  "note": "Multi-document answer. Sentence 3 over-cites an irrelevant (but retrieved) passage, which lowers citation precision without changing its label.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Conference registration fees come out of the learning budget.",
+        "citations": [
+          "people/learning-budget.md#conferences"
+        ]
+      },
+      {
+        "text": "Travel and lodging for an approved conference are paid from the team's travel budget.",
+        "citations": [
+          "people/learning-budget.md#conferences"
+        ]
+      },
+      {
+        "text": "The nightly hotel limit in London is $325.",
+        "citations": [
+          "workplace/travel.md#hotels",
+          "people/learning-budget.md#annual-budget"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported",
+    "supported"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "synthetic": true,
+  "question_id": "q11",
+  "question": "Which days do hybrid employees work in the office?",
+  "note": "Faithful one-sentence answer.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Employees who live within commuting distance of an office work there on Tuesday and Wednesday.",
+        "citations": [
+          "workplace/remote-work.md#hybrid-schedule"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported"
+  ]
+}

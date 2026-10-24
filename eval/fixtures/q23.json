@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q23",
+  "question": "Can we deploy to production on a Friday?",
+  "note": "Faithful answer with the exception included.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "No, there are no production deployments on Fridays.",
+        "citations": [
+          "engineering/deployments.md#deployment-windows"
+        ]
+      },
+      {
+        "text": "The exception is fixes for SEV1 or SEV2 incidents.",
+        "citations": [
+          "engineering/deployments.md#deployment-windows"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

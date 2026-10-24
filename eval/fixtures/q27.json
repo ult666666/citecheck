@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q27",
+  "question": "What are the core hours?",
+  "note": "Faithful answer with times.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Core hours are 11:00 to 15:00 US Eastern Time, Monday to Friday.",
+        "citations": [
+          "workplace/remote-work.md#core-hours"
+        ]
+      },
+      {
+        "text": "Outside core hours, schedules are flexible.",
+        "citations": [
+          "workplace/remote-work.md#core-hours"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

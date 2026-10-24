@@ -1,0 +1,20 @@
+{
+  "synthetic": true,
+  "question_id": "u02",
+  "question": "What is the meal per diem for international trips?",
+  "note": "Deliberate wrong answer to an unanswerable question: the passage gives the domestic per diem only. The checker misses it because every word but 'international' matches (5 of 6), which is above the supported threshold.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "The meal per diem for international trips is $75 per day.",
+        "citations": [
+          "workplace/travel.md#meals-and-per-diem"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "unsupported"
+  ]
+}

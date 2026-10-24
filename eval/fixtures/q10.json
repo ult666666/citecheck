@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q10",
+  "question": "What is the limit on gifts from vendors?",
+  "note": "Faithful answer.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "You may accept gifts from vendors or customers worth up to $50 per person per year.",
+        "citations": [
+          "people/code-of-conduct.md#gifts-from-vendors"
+        ]
+      },
+      {
+        "text": "Anything above that value must be reported to the People team.",
+        "citations": [
+          "people/code-of-conduct.md#gifts-from-vendors"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

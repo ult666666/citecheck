@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q02",
+  "question": "How far in advance do I need to request PTO for an absence longer than three days?",
+  "note": "Faithful answer.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "For absences longer than three consecutive working days, submit the PTO request at least 10 business days in advance.",
+        "citations": [
+          "people/time-off.md#requesting-time-off"
+        ]
+      },
+      {
+        "text": "Request PTO in the HR portal.",
+        "citations": [
+          "people/time-off.md#requesting-time-off"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ]
+}

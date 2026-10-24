@@ -1,6 +1,7 @@
 """Test doubles shared by several test modules. Nothing here touches the network."""
 
 from collections.abc import Iterable, Mapping
+from pathlib import Path
 from typing import Any
 
 from anthropic.types.beta import BetaMessage
@@ -8,6 +9,10 @@ from anthropic.types.beta import BetaMessage
 from citecheck.llm import ClientSource, ModelRequest, ModelResponse, TokenUsage, ToolCall
 
 MODEL = "claude-opus-5-5"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+HANDBOOK = REPO_ROOT / "examples" / "handbook"
+QUESTIONS = REPO_ROOT / "eval" / "questions.json"
+FIXTURES = REPO_ROOT / "eval" / "fixtures"
 
 
 def tool_response(

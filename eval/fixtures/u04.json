@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "question_id": "u04",
+  "question": "Who founded Larkmoor Analytics?",
+  "note": "Correct abstention.",
+  "answer": {
+    "sentences": [],
+    "insufficient_evidence": true
+  },
+  "expected_labels": []
+}

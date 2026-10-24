@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q20",
+  "question": "What should I do if I clicked a link in a phishing email?",
+  "note": "Deliberate embellishment: sentence 2 adds 'notify your manager', which the passage does not say. The checker rates it weakly supported (4 of 6 words found).",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Report it immediately in the security help channel.",
+        "citations": [
+          "security/phishing.md#if-you-clicked"
+        ]
+      },
+      {
+        "text": "Change your password right away and notify your manager.",
+        "citations": [
+          "security/phishing.md#if-you-clicked"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "unsupported"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "synthetic": true,
+  "question_id": "q15",
+  "question": "Can I fly premium economy on a long flight?",
+  "note": "Deliberate faithful paraphrase in different words: sentence 1 is correct, but it shares too few words with the passage, so the lexical checker flags it (a known limit). The judge fixture shows an entailment judge accepting it.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Yes, premium economy is permitted when the trip takes 6 hours or more.",
+        "citations": [
+          "workplace/travel.md#flights"
+        ]
+      },
+      {
+        "text": "Business class is never reimbursed.",
+        "citations": [
+          "workplace/travel.md#flights"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "supported"
+  ],
+  "judge": {
+    "verdicts": [
+      {
+        "sentence": 1,
+        "verdict": "supported",
+        "reason": "The passage allows premium economy for flights of 6 hours or longer, which is what the sentence says."
+      },
+      {
+        "sentence": 2,
+        "verdict": "supported",
+        "reason": "The passage says business class is never reimbursed."
+      }
+    ]
+  }
+}

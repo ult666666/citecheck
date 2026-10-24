@@ -1,0 +1,20 @@
+# EXAMPLE ONLY: these numbers are placeholders, NOT Anthropic's prices.
+#
+# citecheck ships no prices on purpose: prices change, and they depend on your
+# contract and platform. Copy this file, replace every number with the
+# per-million-token prices you actually pay (see
+# https://platform.claude.com/docs/en/about-claude/pricing or your provider's
+# price list), and pass the copy with --prices.
+#
+# Requests are priced by the model that served them, so if you keep refusal
+# fallback switched on, add the fallback models you may be served by as well.
+# The cache prices are for the 5-minute prompt cache, the only cache lifetime
+# citecheck asks for.
+
+currency = "USD"
+
+[models."claude-opus-5-5"]
+input_per_mtok = 1.00
+output_per_mtok = 5.00
+cache_write_per_mtok = 1.25
+cache_read_per_mtok = 0.10

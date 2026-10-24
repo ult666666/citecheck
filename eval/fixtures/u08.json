@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "question_id": "u08",
+  "question": "What is the weather like in Pittsburgh today?",
+  "note": "Correct abstention.",
+  "answer": {
+    "sentences": [],
+    "insufficient_evidence": true
+  },
+  "expected_labels": []
+}

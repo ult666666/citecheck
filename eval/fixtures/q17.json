@@ -1,0 +1,25 @@
+{
+  "synthetic": true,
+  "question_id": "q17",
+  "question": "Who needs to approve a $5,000 purchase?",
+  "note": "Sentence 1 is correct but restates the $5,000 from the question, a number no passage contains, so the number check flags it (a known limit). Sentence 2 is an uncited opinion, flagged because it has no citation.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "A $5,000 purchase falls in the $1,000 to $10,000 range, so it needs approval from your department head and Finance.",
+        "citations": [
+          "workplace/procurement.md#approval-limits"
+        ]
+      },
+      {
+        "text": "This rule helps Larkmoor control spending.",
+        "citations": []
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "unsupported"
+  ]
+}

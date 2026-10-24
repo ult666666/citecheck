@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "question_id": "u05",
+  "question": "Is there a dress code for the office?",
+  "note": "Correct abstention.",
+  "answer": {
+    "sentences": [],
+    "insufficient_evidence": true
+  },
+  "expected_labels": []
+}

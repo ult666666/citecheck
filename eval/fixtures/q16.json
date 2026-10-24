@@ -1,0 +1,27 @@
+{
+  "synthetic": true,
+  "question_id": "q16",
+  "question": "What happens if I lose my office badge?",
+  "note": "Deliberate wrong figure: sentence 2 says $25 where the passage says $20; the number check catches it.",
+  "answer": {
+    "sentences": [
+      {
+        "text": "Report a lost or stolen badge to facilities within 24 hours so that it can be deactivated.",
+        "citations": [
+          "workplace/office.md#lost-badges"
+        ]
+      },
+      {
+        "text": "The first replacement badge is free, and each later replacement costs $25.",
+        "citations": [
+          "workplace/office.md#lost-badges"
+        ]
+      }
+    ],
+    "insufficient_evidence": false
+  },
+  "expected_labels": [
+    "supported",
+    "unsupported"
+  ]
+}
