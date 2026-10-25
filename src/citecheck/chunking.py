@@ -42,7 +42,7 @@ MAX_FILE_BYTES: Final = 5_000_000
 
 _HEADING_RE: Final = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*?))?[ \t]*$")
 _CLOSING_HASHES_RE: Final = re.compile(r"(?:^|[ \t]+)#+$")
-_FENCE_RE: Final = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+_FENCE_RE: Final = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 
 
 @dataclass(frozen=True)
@@ -159,13 +159,21 @@ def _split_sections(lines: list[str], first_line: int, *, markdown: bool) -> lis
             fence_match = _FENCE_RE.match(line)
             if fence is not None:
                 paragraph.append((line_number, line.rstrip()))
-                if fence_match and fence_match.group(1)[0] == fence:
+                if (
+                    fence_match
+                    and fence_match.group(1)[0] == fence[0]
+                    and len(fence_match.group(1)) >= len(fence)
+                    and not fence_match.group(2).strip(" \t")
+                ):
                     fence = None
                 continue
             if fence_match:
-                fence = fence_match.group(1)[0]
-                paragraph.append((line_number, line.rstrip()))
-                continue
+                marker, info = fence_match.groups()
+                # CommonMark forbids backticks in a backtick fence's info string.
+                if marker[0] == "~" or "`" not in info:
+                    fence = marker
+                    paragraph.append((line_number, line.rstrip()))
+                    continue
             heading = _HEADING_RE.match(line)
             if heading:
                 flush()

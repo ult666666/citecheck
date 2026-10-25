@@ -50,6 +50,12 @@ paragraph is never split, so a single paragraph longer than the limit becomes on
 chunk; that keeps every chunk a contiguous, readable run of the source. Plain-text files have no
 headings, so the whole file is one section.
 
+**Fence boundaries.** The scanner retains the opener's marker length and validates the
+closing suffix, following [CommonMark §4.5](https://spec.commonmark.org/0.31.2/#fenced-code-blocks).
+Shorter markers and fence-looking lines with trailing text stay literal code, so they cannot
+create false citation sections. Code contents remain searchable under their enclosing heading.
+The scanner handles top-level ATX boundaries; it is not a full Markdown renderer.
+
 **Chunk IDs.** An ID is `<relative path>#<heading slug>`, for example
 `people/time-off.md#carryover`. Slugs follow GitHub's anchor style (lowercase, punctuation
 removed, spaces to hyphens). A repeated heading in one file gets `-2`, `-3`; a section split into
