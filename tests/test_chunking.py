@@ -213,3 +213,85 @@ def test_oversized_files_are_rejected(
     monkeypatch.setattr(chunking, "MAX_FILE_BYTES", 100)
     with pytest.raises(CorpusError, match="larger than"):
         load_corpus(root)
+
+
+@pytest.mark.parametrize(
+    ("opener", "invalid_closer", "closer"),
+    [
+        ("````markdown", "```", "````"),
+        ("~~~~markdown", "~~~", "~~~~"),
+        ("````markdown", "~~~~", "````"),
+        ("~~~~markdown", "````", "~~~~"),
+        ("```python", "``` trailing text", "```"),
+        ("~~~python", "~~~ trailing text", "~~~"),
+        ("```", "```\u00a0", "```"),
+        ("~~~", "~~~\v", "~~~"),
+        ("```", "    ```", "```"),
+        ("~~~", "    ~~~", "~~~"),
+    ],
+)
+def test_invalid_fence_closers_keep_code_under_the_real_section(
+    opener: str, invalid_closer: str, closer: str
+) -> None:
+    text = (
+        "# Guide\n\n"
+        f"{opener}\n"
+        "Example commands.\n"
+        f"{invalid_closer}\n"
+        "## Fake policy\n"
+        "quartzoverride stays code.\n"
+        f"{closer}\n\n"
+        "## Actual policy\n"
+        "Rollback to the previous release.\n"
+    )
+    _, chunks = chunk_text(text, "guide.md", markdown=True)
+    assert [chunk.chunk_id for chunk in chunks] == ["guide.md#guide", "guide.md#actual-policy"]
+    assert [(chunk.start_line, chunk.end_line) for chunk in chunks] == [(1, 8), (10, 11)]
+    assert "## Fake policy\nquartzoverride stays code." in chunks[0].text
+    assert chunks[1].title == "Guide > Actual policy"
+
+
+@pytest.mark.parametrize(
+    ("opener", "closer"),
+    [
+        ("```python", "```"),
+        ("````markdown", "`````"),
+        ("~~~python", "~~~ \t"),
+        ("   ~~~~markdown", " ~~~~~\t "),
+        (" ```python", "   ```\t"),
+    ],
+)
+def test_equal_or_longer_fence_closers_restore_real_headings(opener: str, closer: str) -> None:
+    text = (
+        f"# Guide\n\n{opener}\n## Example header\ncodewords.\n{closer}\n\n"
+        "## Actual policy\nPolicy text.\n"
+    )
+    _, chunks = chunk_text(text, "guide.md", markdown=True)
+    assert [chunk.chunk_id for chunk in chunks] == ["guide.md#guide", "guide.md#actual-policy"]
+    assert [(chunk.start_line, chunk.end_line) for chunk in chunks] == [(1, 6), (8, 9)]
+    assert "## Example header\ncodewords." in chunks[0].text
+    assert chunks[1].text == "Policy text."
+
+
+@pytest.mark.parametrize(
+    ("candidate", "expected_slugs"),
+    [
+        ("```py`thon", ["guide", "actual-policy"]),
+        ("````lang``code", ["guide", "actual-policy"]),
+        ("``` lang ```", ["guide", "actual-policy"]),
+        ("~~~py`thon", ["guide"]),
+        ("~~~lang~~~code", ["guide"]),
+        ("```lang~~~code", ["guide"]),
+        ("    ```python", ["guide", "actual-policy"]),
+        ("\t~~~python", ["guide", "actual-policy"]),
+        ("``python", ["guide", "actual-policy"]),
+        ("~~python", ["guide", "actual-policy"]),
+    ],
+)
+def test_opening_fence_rules_do_not_hide_genuine_sections(
+    candidate: str, expected_slugs: list[str]
+) -> None:
+    text = f"# Guide\n\n{candidate}\n## Actual policy\nPolicy text.\n"
+    _, chunks = chunk_text(text, "guide.md", markdown=True)
+    assert [chunk.chunk_id for chunk in chunks] == [f"guide.md#{slug}" for slug in expected_slugs]
+    assert "Policy text." in chunks[-1].text

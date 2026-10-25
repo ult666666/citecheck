@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Preserve Markdown code-fence boundaries when assigning section titles and citation IDs:
+  shorter markers, incorrect closing suffixes and invalid backtick info strings no longer
+  expose code headings or hide genuine document sections. Regression tests cover real SQLite
+  indexing and retrieval, source line spans, and both backtick and tilde fences.
+
 ## [0.1.0] - 2026-10-23
 
 ### Added

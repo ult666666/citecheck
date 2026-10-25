@@ -137,3 +137,64 @@ def test_an_index_from_another_format_version(built: Index) -> None:
         conn.commit()
     with pytest.raises(IndexFormatError, match=f"reads format '{SCHEMA_VERSION}'"):
         Index(built.path)
+
+
+@pytest.mark.parametrize(
+    ("opener", "invalid_closer", "closer"),
+    [
+        ("````markdown", "```", "````"),
+        ("~~~~markdown", "~~~", "~~~~"),
+        ("```markdown", "``` not a closer", "```"),
+        ("~~~markdown", "~~~ not a closer", "~~~"),
+    ],
+)
+def test_indexed_code_is_retrieved_with_its_real_section_citation(
+    make_corpus: CorpusFactory,
+    tmp_path: Path,
+    opener: str,
+    invalid_closer: str,
+    closer: str,
+) -> None:
+    from citecheck.retrieval import retrieve
+
+    source = (
+        "# Deployment Guide\n\n"
+        f"{opener}\n"
+        "Example commands.\n"
+        f"{invalid_closer}\n"
+        "## Override Checklist\n"
+        "quartzoverride command example.\n"
+        f"{closer}\n\n"
+        "## Rollback Policy\n"
+        "Rollback to the previous release.\n"
+    )
+    corpus = make_corpus({"deploy.md": source})
+    path = tmp_path / "index.sqlite"
+    stats = build_index(corpus, path)
+    index = Index(path)
+    assert (stats.documents, stats.chunks) == (1, 2)
+    assert index.chunk_ids() == {"deploy.md#deployment-guide", "deploy.md#rollback-policy"}
+    offered = retrieve(index, "quartzoverride", k=5, min_score=0.0).passages
+    assert [passage.chunk_id for passage in offered] == ["deploy.md#deployment-guide"]
+    assert offered[0].title == "Deployment Guide"
+    assert (offered[0].start_line, offered[0].end_line) == (1, 8)
+    assert "## Override Checklist\nquartzoverride command example." in offered[0].text
+    policy = retrieve(index, "rollback", k=5, min_score=0.0).passages
+    assert [passage.chunk_id for passage in policy] == ["deploy.md#rollback-policy"]
+    assert (policy[0].start_line, policy[0].end_line) == (10, 11)
+
+
+def test_invalid_backtick_info_does_not_swallow_indexed_policy_heading(
+    make_corpus: CorpusFactory, tmp_path: Path
+) -> None:
+    from citecheck.retrieval import retrieve
+
+    corpus = make_corpus(
+        {"policy.md": "# Guide\n\n```python`example\n## Retention\nKeep audit records.\n"}
+    )
+    path = tmp_path / "index.sqlite"
+    build_index(corpus, path)
+    offered = retrieve(Index(path), "records", k=5, min_score=0.0).passages
+    assert [passage.chunk_id for passage in offered] == ["policy.md#retention"]
+    assert offered[0].title == "Guide > Retention"
+    assert (offered[0].start_line, offered[0].end_line) == (4, 5)
