@@ -7,10 +7,10 @@ checker flags the claims the sources do not support.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.12 | 3.13](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](pyproject.toml)
 
-> **Status:** version 0.1.0 of a portfolio project. The demo, the tests and the evaluation run
+> **Status:** version 0.1.0 of a portfolio project. The demo, the tests, CI and the evaluation run
 > offline against hand-written synthetic model responses. Live mode calls the Anthropic API with
-> your own key; it was not run against the real API while this repository was built (see
-> [Limitations](#limitations-and-roadmap)).
+> your own key. CI never calls the API, and the live path was not run against the real API while
+> this repository was built (see [Limitations](#limitations-and-roadmap)).
 
 ## Why
 
@@ -66,7 +66,17 @@ citecheck index path/to/docs
 citecheck search "your question"
 ```
 
-Outside a clone, `ask` needs `--live` and your own API key (see [Live mode](#live-mode-with-your-own-key)): offline answers replay the repository's recorded fixtures.
+BM25 scores depend on the corpus. On a handful of short files every score can stay below the
+default `--min-score` of 3, so results show as `[below threshold]`. Index more files, or pass a
+lower `--min-score`.
+
+Outside a clone, `ask` and `serve` need `--live` and your own API key (see
+[Live mode](#live-mode-with-your-own-key)): offline answers replay the repository's recorded
+fixtures. `serve` also needs the optional `api` extra:
+
+```bash
+pip install "citecheck[api] @ https://github.com/ult666666/citecheck/releases/download/v0.1.0/citecheck-0.1.0-py3-none-any.whl"
+```
 
 To try the whole pipeline offline on the bundled handbook, clone the repository. This requires Python 3.12 or newer and [uv](https://docs.astral.sh/uv/); run the commands from the repository root.
 
@@ -304,7 +314,8 @@ src/citecheck/
 The tests never touch the network: an autouse fixture replaces `anthropic.Anthropic` with a
 constructor that fails the test, and the live adapter is tested with real SDK response types and
 a stand-in client. Hypothesis property tests check, among other things, that any user string
-becomes a query SQLite accepts. CI runs the same checks on Python 3.12 and 3.13, with no API key.
+becomes a query SQLite accepts. CI runs the same checks on Python 3.12 and 3.13, then an offline
+smoke test of the CLI (`index`, `search`, `ask`, `ask --dry-run`, `eval`), with no API key.
 
 ## Limitations and roadmap
 
@@ -323,9 +334,9 @@ becomes a query SQLite accepts. CI runs the same checks on Python 3.12 and 3.13,
   stemmer conflates some unrelated words ("international" matches "internal" in this corpus).
 - **The evaluation is tiny and self-made.** One author wrote the corpus, questions, gold labels,
   fixtures and human labels, and calibrated the threshold on the same questions.
-- **Unverified here:** live API calls (never made while building this) and the hosted CI run
-  (the workflow is included but has not run on GitHub yet). Token counts in fixture mode are
-  estimates.
+- **Live mode is not exercised in CI.** CI has no API key, so the live adapter is tested only
+  with real SDK response types and a stand-in client. No live API calls were made while
+  building this. Token counts in fixture mode are estimates.
 - **Ingestion is basic:** Markdown ATX headings and plain text only (no PDF, HTML or setext
   headings), a paragraph is never split, the index is rebuilt from scratch, and the text
   normalization is English-only.

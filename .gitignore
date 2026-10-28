@@ -34,3 +34,6 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+
+# Local agent planning notes (not part of the project docs)
+docs/superpowers/

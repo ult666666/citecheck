@@ -62,6 +62,17 @@ def test_index_reports_what_it_built(capsys: pytest.CaptureFixture[str], tmp_pat
     assert out.startswith("Indexed 25 documents as 103 chunks into ")
 
 
+def test_index_uses_the_singular_for_one(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "travel.md").write_text("# Travel\n\nHotel stays are capped.\n", encoding="utf-8")
+    code, out, _ = run(capsys, "index", str(docs), "--db", str(tmp_path / "index.sqlite"))
+    assert code == 0
+    assert out.startswith("Indexed 1 document as 1 chunk into ")
+
+
 def test_search_marks_offered_and_below_threshold_chunks(
     capsys: pytest.CaptureFixture[str], db: Path
 ) -> None:

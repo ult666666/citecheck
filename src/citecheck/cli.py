@@ -325,9 +325,15 @@ def format_answer(answer: CheckedAnswer) -> str:
     return "\n".join(lines)
 
 
+def _count(n: int, noun: str) -> str:
+    return f"{n} {noun}" if n == 1 else f"{n} {noun}s"
+
+
 def _cmd_index(args: argparse.Namespace) -> int:
     stats = build_index(args.directory, args.db, max_chunk_chars=args.max_chunk_chars)
-    print(f"Indexed {stats.documents} documents as {stats.chunks} chunks into {args.db}")
+    documents = _count(stats.documents, "document")
+    chunks = _count(stats.chunks, "chunk")
+    print(f"Indexed {documents} as {chunks} into {args.db}")
     return 0
 
 

@@ -12,6 +12,7 @@ All notable changes to this project are documented here. The format follows
   shorter markers, incorrect closing suffixes and invalid backtick info strings no longer
   expose code headings or hide genuine document sections. Regression tests cover real SQLite
   indexing and retrieval, source line spans, and both backtick and tilde fences.
+- `citecheck index` prints "1 document" and "1 chunk" instead of "1 documents" and "1 chunks".
 
 ## [0.1.0] - 2026-10-23
 
@@ -40,4 +41,5 @@ All notable changes to this project are documented here. The format follows
 - CI on Python 3.12 and 3.13: ruff, mypy (strict), pytest with a 90% coverage floor and an
   offline CLI smoke test.
 
+[Unreleased]: https://github.com/ult666666/citecheck/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/ult666666/citecheck/releases/tag/v0.1.0
