@@ -368,7 +368,10 @@ checker (`citecheck.claims`) adds that step and then asks sharper questions:
    runs, because a contradiction can only be claimed against the rule the claim restates.
 3. **Polarity.** Flagged when exactly one side is negated ("not", "no", "never", "without",
    "cannot", ...), and the claim also disagrees with the clause's whole sentence. "No more
-   than" and similar comparisons are removed first.
+   than" and similar comparisons mean "at most", not a negation, so they are removed first.
+   A comparison that one side states with "no" or "not" and the other without ("more than 3
+   days" against "no more than 3 days") is flagged by its own check against the whole
+   sentence.
 4. **Modality.** Flagged when the claim only obliges ("must", "required", "need") where the
    clause and its sentence only permit ("may", "can", "optional"), or the reverse. Two negated
    sides are both prohibitions and agree.
@@ -385,7 +388,9 @@ checker (`citecheck.claims`) adds that step and then asks sharper questions:
    value present anywhere in the aligned clause's sentence is never a conflict. A number copied
    from the question passes only inside a comparison that holds: "$5,000 falls in the $1,000 to
    $10,000 range" or "a $700 purchase is under $1,000"; "a $12,000 purchase needs the department
-   head" is still flagged.
+   head" is still flagged. A number that is not read as a quantity because letters follow it
+   ("9am", "15th", "48h") keeps the lexical number rule: it must appear somewhere in the cited
+   passages.
 7. **Label.** Any problem makes a claim unsupported, and the reason names it. Otherwise the
    claim's own word overlap decides its label, with the same thresholds as before.
 
@@ -418,8 +423,8 @@ unchanged, and on test one case moved, c035, which is now flagged for a spurious
 
 On the test cases the claim-level checker alone is right 24 times and the lexical checker
 alone once. Under no difference each such case would favor either checker with probability
-1/2, so the exact two-sided McNemar p-value is 2 × 25 / 2^25 = 1.5e-06. By category on test,
-the claim-level checker judges correctly 7 of 7 antonym cases (lexical 1), 5 of 5 negation
+1/2, so the exact two-sided McNemar p-value is 2 × (1 + 25) / 2^25 = 1.5e-06. By category on
+test, the claim-level checker judges correctly 7 of 7 antonym cases (lexical 1), 5 of 5 negation
 cases (1), 6 of 6 unit cases (2) and 5 of 9 swapped attributes (0). It misses four unsupported
 test sentences, all swapped attributes: two values moved within one source sentence ("75
 percent of the premium for employees", where 75 percent is the dependents' share, and "$500 per

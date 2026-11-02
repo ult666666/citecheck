@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+import time
 from pathlib import Path
 
 import pytest
@@ -155,6 +156,36 @@ def test_alignment_must_be_unambiguous() -> None:
             "Who approves a $12,000 purchase?",
             "$12,000",
         ),
+        (
+            "A note is required for absences of more than 3 sick days.",
+            "A note is required for absences of no more than 3 sick days.",
+            "",
+            "'more than' where the cited text says 'no more than'",
+        ),
+        (
+            "Employees who joined not less than 90 days before a cycle skip it.",
+            "Employees who joined less than 90 days before a cycle skip it.",
+            "",
+            "'no less than' where the cited text says 'less than'",
+        ),
+        (
+            "The front desk opens at 9am on weekdays.",
+            "The front desk opens at 8:00 on weekdays.",
+            "",
+            "9 is not in the cited passages",
+        ),
+        (
+            "Timesheets are due on the 15th business day of the month.",
+            "Timesheets are due on the 5th business day of the month.",
+            "",
+            "15 is not in the cited passages",
+        ),
+        (
+            "Report an incident within 48h of finding it.",
+            "Report an incident within 24 hours of finding it.",
+            "",
+            "48 is not in the cited passages",
+        ),
     ],
 )
 def test_each_check_flags_its_contradiction(
@@ -178,6 +209,12 @@ def test_each_check_flags_its_contradiction(
             "Who approves a $700 purchase?",
         ),
         ("Access lasts no more than 72 hours.", "Access is granted for at most 72 hours.", ""),
+        ("Access lasts not more than 72 hours.", "Access lasts no more than 72 hours.", ""),
+        (
+            "Timesheets are due on the 5th business day.",
+            "Timesheets are due on the 5th business day of the month.",
+            "",
+        ),
         (
             "Gifts above $50 must be reported.",
             "Gifts worth up to $50 per person per year are fine. "
@@ -216,6 +253,32 @@ def test_inserting_a_negation_into_any_aligned_sentence_is_caught(
         tried += 1
         assert any(f.problems for f in analyze(flipped, [text])), flipped
     assert tried > 40
+
+
+def test_negating_any_comparison_in_an_aligned_sentence_is_caught(
+    corpus: dict[str, RetrievedChunk],
+) -> None:
+    # "No more than" is not a negation for the polarity check, so adding the "no" to
+    # "more than" needs its own comparison.
+    tried = 0
+    for sentence, text in sentences(corpus):
+        match = re.search(r"\b(?:more|less|fewer|later|earlier) than\b", sentence)
+        if not match or not all(f.aligned for f in analyze(sentence, [text])):
+            continue
+        flipped = sentence[: match.start()] + "no " + sentence[match.start() :]
+        tried += 1
+        assert any(f.problems for f in analyze(flipped, [text])), flipped
+    assert tried >= 3
+
+
+def test_quantities_stay_linear_on_a_long_run_of_digits() -> None:
+    # A run of digits followed by a letter used to cost quadratic time: about 20 seconds
+    # for 32,000 digits. Every pattern must stay linear on untrusted passages and answers.
+    run = "1" * 30_000 + "a"
+    started = time.perf_counter()
+    assert quantities(run) == []
+    analyze("Submit expenses within 30 days.", [f"Submit expenses within 30 days. {run}"])
+    assert time.perf_counter() - started < 2
 
 
 def test_changing_any_counted_number_is_caught(corpus: dict[str, RetrievedChunk]) -> None:
