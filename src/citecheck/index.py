@@ -74,6 +74,9 @@ WHERE chunks_fts MATCH ?
 ORDER BY rank, c.chunk_id
 LIMIT ?
 """
+_CHUNK_SQL: Final = (
+    "SELECT chunk_id, doc_path, title, start_line, end_line, text FROM chunks WHERE chunk_id = ?"
+)
 
 
 @dataclass(frozen=True)
@@ -253,3 +256,26 @@ class Index:
         """Return every chunk ID in the index (used to validate gold labels)."""
         with closing(self._connect()) as conn:
             return frozenset(row[0] for row in conn.execute("SELECT chunk_id FROM chunks"))
+
+    def chunks(self, chunk_ids: Iterable[str]) -> dict[str, RetrievedChunk]:
+        """Return the named chunks by ID, with score 0.0; unknown IDs are left out.
+
+        Used by the claim-case evaluation, which cites chunks directly instead of
+        retrieving them.
+        """
+        wanted = sorted(set(chunk_ids))
+        found: dict[str, RetrievedChunk] = {}
+        with closing(self._connect()) as conn:
+            for chunk_id in wanted:
+                row = conn.execute(_CHUNK_SQL, (chunk_id,)).fetchone()
+                if row is not None:
+                    found[chunk_id] = RetrievedChunk(
+                        chunk_id=row[0],
+                        doc_path=row[1],
+                        title=row[2],
+                        start_line=row[3],
+                        end_line=row[4],
+                        text=row[5],
+                        score=0.0,
+                    )
+        return found

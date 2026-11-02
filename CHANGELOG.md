@@ -6,6 +6,25 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A claim-level checker, now the default: sentences are split into claims, each claim is aligned
+  with the cited clause it restates, and a flipped negation, a changed modal verb, a word swapped
+  for one of 37 opposites, or a number whose value or unit differs from that clause makes it
+  unsupported. Numbers copied from the question pass only inside a comparison that holds.
+  Per-claim verdicts appear in the JSON output as `claims`.
+- `eval/claims.json`: 140 hand-labelled claim cases with a hash-based dev/test split, and
+  `citecheck eval-claims`, which scores both checkers with an exact McNemar test. On the 77
+  held-out cases the claim-level checker flags 44 of 48 unsupported sentences (lexical: 20) with
+  2 false flags on 29 supported ones (lexical: 1).
+- `--checker {claims,lexical}` on `ask`, `eval` and `serve`, and `Index.chunks()` for lookups by
+  chunk ID.
+
+### Changed
+
+- `citecheck eval` now flags 7 of 7 human-unsupported fixture sentences (5 of 7 before) with the
+  same 2 false flags. `--checker lexical` reproduces the 0.1.0 numbers exactly.
+
 ### Fixed
 
 - Preserve Markdown code-fence boundaries when assigning section titles and citation IDs:

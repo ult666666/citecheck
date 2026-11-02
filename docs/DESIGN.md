@@ -267,8 +267,11 @@ working.
 
 ## 6. Verification method
 
-The checker answers one question per sentence: *do the passages this sentence cites contain its
-words and numbers?*
+citecheck has two checkers. The lexical checker, described first, answers one question per
+sentence: *do the passages this sentence cites contain its words and numbers?* The claim-level
+checker, the default, keeps steps 1 to 3 and replaces the number rule with comparisons against
+the clause a claim restates ([Claim-level checking](#claim-level-checking)). `--checker lexical`
+selects the original.
 
 **Step 1: citation validity.** Citations are deduplicated. A citation is valid only if it names a
 passage that was offered to the model for this question; anything else (an invented ID, a typo,
@@ -342,6 +345,100 @@ number rule.
 | correct paraphrase in other words | q15 | unsupported (4 of 9 words) | **no** (false flag) |
 | correct sentence repeating the question's $5,000 | q17 | unsupported (number) | **no** (false flag) |
 
+With the claim-level checker, q03 and u02 are caught, q17's $5,000 passes its range comparison
+(the sentence is still weakly supported because its first claim shares 3 of 5 words), and q15
+remains a false flag.
+
+### Claim-level checking
+
+The lexical checker's misses share a cause: it compares a sentence with the union of every word
+in its cited passages, so it cannot tell which rule the sentence restates. The claim-level
+checker (`citecheck.claims`) adds that step and then asks sharper questions:
+
+1. **Split into claims.** A sentence is split at semicolons and at a comma followed by "and",
+   "but", "while", "whereas", "so", "yet" or "plus", when both sides keep at least three content
+   words. A leading "Yes," or "No," is dropped, because it answers the question rather than
+   stating a claim. Each claim gets its own label and the sentence gets the worst one, so a
+   supported half cannot carry an unsupported half.
+2. **Align.** Cited passages are split into sentences and those into clauses (the same comma
+   rule, plus "which", "except" and "unless"). A claim's aligned clause is the clause sharing the
+   most content words with it, where numbers and negations do not count and an opposite word
+   counts as its pair, so changing those words cannot move the alignment. The best clause must
+   share at least two words and strictly more than any other clause; on a tie no clause check
+   runs, because a contradiction can only be claimed against the rule the claim restates.
+3. **Polarity.** Flagged when exactly one side is negated ("not", "no", "never", "without",
+   "cannot", ...), and the claim also disagrees with the clause's whole sentence. "No more
+   than" and similar comparisons are removed first.
+4. **Modality.** Flagged when the claim only obliges ("must", "required", "need") where the
+   clause and its sentence only permit ("may", "can", "optional"), or the reverse. Two negated
+   sides are both prohibitions and agree.
+5. **Opposites.** Flagged when the claim uses one word of 37 fixed pairs ("before"/"after",
+   "minimum"/"maximum", "domestic"/"international", "full"/"part", "accept"/"decline", ...)
+   and the aligned sentence uses only the other.
+6. **Quantities.** Numbers are read with what they count: "30, 60 and 90 days" gives three day
+   counts, "$60 per month" a monthly amount, "4.5:1" a ratio, "10:30" a clock time, "March 31"
+   a date, "Fridays" a weekday, "every quarter" a frequency, "SEV1" an identifier; units skip
+   modifiers such as "business" and acronyms such as "PTO". Every claim quantity must appear in
+   the cited passages. It is flagged if the aligned clause has the same value with another unit
+   ("72 days" against "72 hours"), a different value in the same slot ("30 days" against
+   "90 days", "SEV1" against "SEV2", "$1,500" against "$75 per day"), or if it appears nowhere. A
+   value present anywhere in the aligned clause's sentence is never a conflict. A number copied
+   from the question passes only inside a comparison that holds: "$5,000 falls in the $1,000 to
+   $10,000 range" or "a $700 purchase is under $1,000"; "a $12,000 purchase needs the department
+   head" is still flagged.
+7. **Label.** Any problem makes a claim unsupported, and the reason names it. Otherwise the
+   claim's own word overlap decides its label, with the same thresholds as before.
+
+**Labelled claim cases.** The 49 fixture sentences include only 7 unsupported ones, and the
+lexical checker's four documented errors are among them, so they could not show whether a new
+checker generalizes. `eval/claims.json` adds 140 cases. Each is a sentence written against one
+or two real handbook chunks and labelled supported or unsupported by reading only those chunks.
+Their categories, with counts: restatement 25, paraphrase 17, unit 13, swapped attribute 12,
+negation 12, antonym 12, compound 11, number 9, contradiction 8, date 5, kept negation 5,
+entity 3, question number 3, modality 2, inference 2 and multi-passage 1. Most categories hold
+only one label; compound, question-number and multi-passage cases hold both. `claim_split` assigns a case to dev when the SHA-256 of its ID
+is 0 or 1 modulo 5, which gave 63 dev and 77 test cases. The loader rejects a case whose split
+does not match the rule, and a test pins the file's hash. The file was committed before any
+checker change.
+
+**Protocol and results.** Rules were adjusted only after reading dev results. Once frozen, the
+checker was run once on test: 43 of 48 unsupported sentences flagged and 2 of 29 supported
+sentences flagged. Two later changes were motivated by new corpus-wide tests, not by test
+errors: every sentence of the handbook copied verbatim must pass, and swapping a word for its
+opposite in an aligned sentence must fail. After them the dev and fixture results were
+unchanged, and on test one case moved, c035, which is now flagged for a spurious reason (the verb
+"owns" matched the pair "own"/"another"). Final figures (`uv run citecheck eval-claims`):
+
+| Split | Checker | Unsupported flagged | Supported flagged | Accuracy |
+|---|---|---|---|---|
+| test (77) | lexical | 20 of 48 | 1 of 29 | 0.623 |
+| test (77) | claim-level | 44 of 48 | 2 of 29 | 0.922 |
+| dev (63) | lexical | 6 of 34 | 8 of 29 | 0.429 |
+| dev (63) | claim-level | 28 of 34 | 7 of 29 | 0.794 |
+
+On the test cases the claim-level checker alone is right 24 times and the lexical checker
+alone once. Under no difference each such case would favor either checker with probability
+1/2, so the exact two-sided McNemar p-value is 2 × 25 / 2^25 = 1.5e-06. By category on test,
+the claim-level checker judges correctly 7 of 7 antonym cases (lexical 1), 5 of 5 negation
+cases (1), 6 of 6 unit cases (2) and 5 of 9 swapped attributes (0). It misses four unsupported
+test sentences, all swapped attributes: two values moved within one source sentence ("75
+percent of the premium for employees", where 75 percent is the dependents' share, and "$500 per
+month toward home internet", where $500 is the one-time stipend), a budget named for another
+("paid from the learning budget" for "the team's travel budget") and a duty given to someone
+else ("the promotion committee writes the promotion case"). Its two false flags on test are a
+paraphrase with too few shared words and a compound sentence whose second claim ("it can pay
+for books and workshops") shares 2 of 3 words. On dev it still misses a rule restated without
+its restriction, a claim that merges two sentences and contradicts the one it does not align
+with, two entity swaps, a license class given another class's rule and a value swapped within
+one sentence. Its dev false flags are four paraphrases, two inferences ("60 days before" for
+"less than 90 days") and one question-number sentence with low word overlap.
+
+**What the numbers mean.** They show that the rules catch the error types they were designed
+for, on sentences they were not tuned on, without raising false flags much. They are not an
+accuracy estimate for real model output: the same author wrote the cases, labelled them and
+wrote the rules, and had read every case while writing them, so the test figures are
+optimistic. Real answers will contain errors outside these categories.
+
 **Why a lexical checker at all.** It is deterministic, free, fast, needs no model or network,
 and every verdict comes with the exact words that matched and the ones that did not, so it can be
 audited and unit-tested. Its errors are predictable: it cannot see negation scope, word order,
@@ -393,7 +490,8 @@ C(q) every chunk ID cited in the answer (valid or rejected):
   question is unanswerable = 34 / 36 = 0.944. A partial answer counts as an answer.
 - **checker vs. human** (fixture mode only): a sentence is *flagged* if its label is anything but
   supported. The report counts flagged sentences among those a human labeled unsupported
-  (5 of 7) and among those labeled supported (2 of 42).
+  (7 of 7 with the claim-level checker, 5 of 7 with `--checker lexical`) and among those labeled
+  supported (2 of 42 with either).
 
 These numbers are pinned in `tests/test_evaluation.py`, and `tests/test_readme.py` checks that the
 README shows exactly what `citecheck eval` prints. The report contains no timings, so it is
@@ -473,6 +571,12 @@ rate limits, overloads and network errors with backoff before citecheck sees the
 - **Pinned facts:** the evaluation numbers, the threshold rationale, the Porter quirk, the
   README's evaluation block and quick-start output, and the integrity of the bundled data
   (fictional labels, fixture coverage, deliberately invalid citations listed explicitly).
+- **Metamorphic tests over the whole handbook:** every sentence copied verbatim passes the
+  claim-level checker; inserting "not" into any aligned sentence, changing any counted number
+  to a value the chunk does not contain, or swapping a word for its opposite is flagged. A
+  Hypothesis test feeds arbitrary text through the claim analysis. The held-out and dev figures,
+  the claim file's hash and its split rule are pinned, and the exact McNemar function is checked
+  against hand values and a SciPy cross-check.
 - mypy in strict mode and ruff (including security lints) on source and tests; CI on Python 3.12
   and 3.13.
 
@@ -494,9 +598,10 @@ dependency and less explainable scores. An LLM judge is the most flexible and th
 and it can be wrong in the same ways as the model it grades. citecheck keeps the lexical checker
 as the always-on baseline and adds the judge as an optional second opinion.
 
-**Sentence-level, not claim-level.** One sentence can contain several claims. The prompt asks for
-one claim per sentence, which makes sentence-level checking a reasonable proxy, but a compound
-sentence can still pass on the strength of its supported half.
+**Claims, by rule.** One sentence can contain several claims, so the default checker splits
+compound sentences and labels each part. The split and alignment rules are deliberately simple:
+a split that leaves a short claim can lose context and lower its word overlap (one false flag on
+test), and a claim that merges two source sentences is compared with only one of them.
 
 **Fixed thresholds.** 0.80 and 0.50 are round numbers, not fitted values. A larger labeled set would
 allow choosing them deliberately, for example by setting a target false-flag rate.
@@ -512,8 +617,9 @@ corpus is tiny (103 chunks). It shows retrieval is wired correctly, not that it 
 on real queries.
 
 **Why is the unsupported-sentence rate 12%?** Because the fixtures were written to include errors:
-6 of 49 sentences are labeled unsupported by the checker, and 4 of those 6 are deliberate
-mistakes it caught; the other 2 are correct sentences it flagged wrongly.
+the checker labels 6 of 49 sentences unsupported, and all 6 are deliberate mistakes. It marks 3
+more weakly supported: one deliberate embellishment and two correct sentences whose wording
+differs too much from the passage.
 
 **Why not trust the model's own citations?** That is exactly what the checker is for: citations are
 verified against what was actually retrieved, and claims against what the cited text actually
@@ -524,5 +630,5 @@ their element, the system prompt marks them as data, and whatever comes back is 
 independently. None of that makes injection impossible; it makes it visible.
 
 **What would you build next?** Run the evaluation against live models with labels from other
-people, add an entailment checker and compare it with the lexical one on the same sentences, and
-move to hybrid retrieval.
+people, add an entailment checker and compare it with the claim-level one on `eval/claims.json`,
+and move to hybrid retrieval.

@@ -15,6 +15,8 @@ from citecheck import __version__
 from citecheck.answer import build_answer_request
 from citecheck.chunking import DEFAULT_MAX_CHUNK_CHARS
 from citecheck.config import (
+    CHECKERS,
+    DEFAULT_CHECKER,
     DEFAULT_EFFORT,
     DEFAULT_K,
     DEFAULT_MAX_TOKENS,
@@ -28,7 +30,13 @@ from citecheck.config import (
 )
 from citecheck.costs import PriceTable, load_price_table
 from citecheck.errors import CiteCheckError
-from citecheck.evaluation import evaluate, format_details, format_report
+from citecheck.evaluation import (
+    evaluate,
+    evaluate_claims,
+    format_claim_report,
+    format_details,
+    format_report,
+)
 from citecheck.fixtures import FIXTURE_NOTICE, FixtureClient
 from citecheck.index import DEFAULT_INDEX_PATH, Index, RetrievedChunk, build_index
 from citecheck.llm import AnthropicClient, ModelClient
@@ -37,6 +45,7 @@ from citecheck.retrieval import retrieve, validate_question
 
 DEFAULT_CORPUS: Final = Path("examples") / "handbook"
 DEFAULT_QUESTIONS: Final = Path("eval") / "questions.json"
+DEFAULT_CLAIM_CASES: Final = Path("eval") / "claims.json"
 DEFAULT_FIXTURES: Final = Path("eval") / "fixtures"
 
 
@@ -111,6 +120,12 @@ def _add_model_options(parser: argparse.ArgumentParser) -> None:
 
 def _add_verification_options(parser: argparse.ArgumentParser) -> None:
     group = parser.add_argument_group("verification")
+    group.add_argument(
+        "--checker",
+        choices=CHECKERS,
+        default=DEFAULT_CHECKER,
+        help="claims: claim-level checks (default); lexical: word overlap and the number rule",
+    )
     group.add_argument(
         "--supported-threshold",
         type=float,
@@ -187,6 +202,44 @@ def build_parser() -> argparse.ArgumentParser:
     eval_cmd.add_argument("--details", action="store_true", help="add a per-question table")
     eval_cmd.add_argument("--json", action="store_true", help="print the full report as JSON")
 
+    claims_cmd = commands.add_parser(
+        "eval-claims", help="score both checkers on hand-labelled claim cases"
+    )
+    claims_cmd.add_argument(
+        "--corpus",
+        type=Path,
+        default=DEFAULT_CORPUS,
+        help=f"document folder (default: {DEFAULT_CORPUS})",
+    )
+    claims_cmd.add_argument(
+        "--cases",
+        type=Path,
+        default=DEFAULT_CLAIM_CASES,
+        help=f"labelled claim cases (default: {DEFAULT_CLAIM_CASES})",
+    )
+    claims_cmd.add_argument(
+        "--split",
+        choices=("test", "dev", "all"),
+        default="test",
+        help="held-out test cases (default), the dev cases used for tuning, or all",
+    )
+    claims_cmd.add_argument(
+        "--supported-threshold",
+        type=float,
+        default=DEFAULT_SUPPORTED_THRESHOLD,
+        help=f"minimum support for 'supported' (default: {DEFAULT_SUPPORTED_THRESHOLD})",
+    )
+    claims_cmd.add_argument(
+        "--weak-threshold",
+        type=float,
+        default=DEFAULT_WEAK_THRESHOLD,
+        help=f"minimum support for 'weakly_supported' (default: {DEFAULT_WEAK_THRESHOLD})",
+    )
+    claims_cmd.add_argument(
+        "--details", action="store_true", help="list cases where a checker disagrees"
+    )
+    claims_cmd.add_argument("--json", action="store_true", help="print the report as JSON")
+
     serve = commands.add_parser("serve", help="run the JSON API and HTML page (needs [api])")
     _add_index_option(serve)
     _add_retrieval_options(serve)
@@ -210,6 +263,7 @@ def _settings(args: argparse.Namespace) -> Settings:
         fallback=not args.no_fallback,
         cache_system_prompt=not args.no_cache,
         judge=getattr(args, "judge", False),
+        checker=args.checker,
     )
 
 
@@ -397,6 +451,18 @@ def _cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_eval_claims(args: argparse.Namespace) -> int:
+    settings = Settings(
+        supported_threshold=args.supported_threshold, weak_threshold=args.weak_threshold
+    )
+    report = evaluate_claims(args.corpus, args.cases, settings, split=args.split)
+    if args.json:
+        print(json.dumps(report.to_dict(), indent=2, ensure_ascii=False))
+    else:
+        print(format_claim_report(report, details=args.details))
+    return 0
+
+
 def _cmd_serve(args: argparse.Namespace) -> int:
     try:
         import uvicorn
@@ -420,6 +486,7 @@ _COMMANDS: Final = {
     "search": _cmd_search,
     "ask": _cmd_ask,
     "eval": _cmd_eval,
+    "eval-claims": _cmd_eval_claims,
     "serve": _cmd_serve,
 }
 

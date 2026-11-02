@@ -24,8 +24,10 @@ each sentence against exactly those passages and says, with reasons, which claim
 not back up. When retrieval finds nothing relevant enough, citecheck abstains without calling a
 model at all.
 
-The checker is deliberately simple (word overlap plus an exact-number rule) so that every
-verdict can be verified by hand, and its blind spots are measured rather than hidden.
+The checker splits each sentence into claims and compares every claim with the passage clause
+it restates: negation, "must" against "may", opposite words such as "before" and "after", and
+every number with its unit. Each rule is a lookup or a comparison, so every verdict can be
+checked by hand, and its blind spots are measured on held-out labelled cases rather than hidden.
 
 ## Features
 
@@ -42,14 +44,20 @@ verdict can be verified by hand, and its blind spots are measured rather than hi
 - **Verification:** citations to passages that were not retrieved are rejected. Each sentence
   gets a support score (the share of its content words found in its cited passages, after a
   documented "stemming-lite" normalization) and a label: supported, weakly supported or
-  unsupported. A number that appears in none of the cited passages makes a sentence unsupported.
-  An optional LLM-judge pass (`--judge`) is reported next to the lexical label.
+  unsupported. The default claim-level checker splits compound sentences into claims, aligns
+  each claim with the cited clause it restates, and flags a flipped negation, a changed modal
+  verb, a word swapped for its opposite, or a number whose value or unit differs ("30 days"
+  against "90 days", "72 days" against "72 hours", "$60 per year" against "$60 per month"). A
+  number copied from the question passes only inside a comparison that holds. `--checker
+  lexical` keeps the original word-overlap checker. An optional LLM-judge pass (`--judge`) is
+  reported next to the label.
 - **Interfaces:** a CLI (`index`, `search`, `ask`, `eval`, `serve`), a FastAPI JSON endpoint and a
   small accessible HTML page.
 - **Evaluation:** an original, fictional 25-document handbook, 36 labeled questions (8 of them
   unanswerable) and `citecheck eval`, which reports recall@k, citation precision and recall, the
   unsupported-sentence rate, abstention accuracy and how often the checker agrees with human
-  labels.
+  labels. `citecheck eval-claims` scores both checkers on 140 hand-labelled claim cases with a
+  fixed dev/test split and an exact McNemar test.
 - **Cost and latency:** token counts from the API's `usage` fields (every attempt, priced by the
   model that ran it), cost from a price table you supply (no prices are built in) and
   per-stage timings.
@@ -116,7 +124,7 @@ Answer:
      -> supported: 9 of 9 content words found in the cited passages
   2. Expenses submitted after 60 days are rejected automatically.
      cites: workplace/expenses.md#submitting-expenses
-     -> unsupported: numbers not in the cited passages: 60
+     -> unsupported: the claim says 60 days where the cited text says 30 days
         not found in cited passages: 60, after, automatically, reject
 Summary: 1 supported, 0 weakly supported, 1 unsupported; 0 rejected citations
 Model calls: 1 replayed from fixtures (no API call was made)
@@ -125,8 +133,9 @@ Cost: not computed (pass --prices FILE)
 Time: retrieval 0.3 ms, model 0.1 ms, verification 0.1 ms, total 0.4 ms
 ```
 
-The first sentence stays close to its source and passes. The second invents a 60-day rule: "60"
-appears in no cited passage, so the sentence is flagged however many other words match.
+The first sentence stays close to its source and passes. The second invents a 60-day rule: the
+cited sentence it restates gives the deadline as 30 days, so the sentence is flagged however many
+other words match.
 
 More to try:
 
@@ -196,8 +205,9 @@ flowchart LR
     M -- "refusal or insufficient evidence" --> A2["Abstain"]
     M -- "sentences with citation IDs" --> V["Checker"]
     V --> C1["Reject citations to passages not offered"]
-    V --> C2["Support score and number rule"]
-    C2 --> L["supported, weakly supported or unsupported"]
+    V --> C2["Split into claims, align each with its cited clause"]
+    C2 --> C3["Negation, modality, opposites, numbers with units, word overlap"]
+    C3 --> L["supported, weakly supported or unsupported"]
     V -. "optional judge pass" .-> J["LLM judge verdicts"]
 ```
 
@@ -210,20 +220,26 @@ flowchart LR
 3. **Answer.** The model sees the passages, each wrapped as
    `<passage id="workplace/expenses.md#submitting-expenses" title="...">`, then the question, and
    must call `submit_answer` with sentences, citations and `insufficient_evidence`.
-4. **Check.** For each sentence: drop citations to IDs that were not offered; compare the
-   sentence's content words with those of its cited passages; reject any number the passages do
-   not contain; label by threshold (supported at 0.80 or more, weakly supported at 0.50 or more).
+4. **Check.** For each sentence: drop citations to IDs that were not offered; split it into
+   claims; align each claim with the cited clause that shares the most words with it; flag a
+   negation, modal verb, opposite word or quantity that disagrees with that clause; label the
+   rest by word overlap (supported at 0.80 or more, weakly supported at 0.50 or more). The
+   sentence gets its worst claim's label.
 
-The checker is worth seeing on a known failure. In this fixture the first sentence flips the
-policy's meaning but reuses its words, so word overlap rates it supported. The judge pass (here
-also a hand-written synthetic response) is what catches it:
+The checker is worth seeing on the failure that motivated it. In this fixture the first sentence
+flips the policy's meaning but reuses its words, so the original word-overlap checker
+(`--checker lexical`) rates it supported:
 
 ```text
   1. A doctor's note is not required for absences of more than 3 consecutive sick days.
      cites: people/time-off.md#sick-leave
      -> supported: 10 of 10 content words found in the cited passages
-     judge: not_supported (The passage says a doctor's note is required for absences of more than 3 consecutive sick days; the sentence says the opposite.)
 ```
+
+The claim-level checker compares the sentence with the cited sentence it restates, "A doctor's
+note is required only for absences of more than 3 consecutive sick days.", and flags it: "only
+the claim is negated". The optional judge pass (here also a hand-written synthetic response)
+agrees.
 
 [`docs/DESIGN.md`](docs/DESIGN.md) explains every design decision, the verification method and
 its limits, the evaluation methodology and the trade-offs.
@@ -248,8 +264,8 @@ Citations
   recall                        0.935    29 of 31 gold chunk IDs were cited
   rejected citations            2        cited chunks that were not offered
 Verification (49 answer sentences)
-  supported                     42
-  weakly supported              1
+  supported                     40
+  weakly supported              3
   unsupported                   6
   unsupported-sentence rate     0.122
 Abstention
@@ -258,7 +274,7 @@ Abstention
   unanswerable, answered        1        answers that should not exist
   answerable, abstained         1 of 28
 Checker vs. human labels in the fixtures
-  flagged 5 of 7 sentences labelled unsupported (missed 2)
+  flagged 7 of 7 sentences labelled unsupported (missed 0)
   flagged 2 of 42 sentences labelled supported (false flags)
 Tokens (estimated at ~4 characters per token, not measured): 34 model calls, 34,802 input, 2,133 output, 0 cache-read, 0 cache-write
 ```
@@ -277,12 +293,66 @@ What the numbers do show:
 - **Citations:** the 4 non-gold citations are the deliberate errors (an over-cited passage, a
   typo'd chunk ID, a chunk ID that does not exist) plus the citation in the one answer to an
   unanswerable question. The 2 rejected citations are the typo and the nonexistent ID.
-- **The checker** flags 5 of the 7 sentences a human labeled unsupported: the invented 60-day
-  rule, a wrong $25 fee, an uncited opinion, a sentence whose only citation is mistyped, and
-  an added "notify your manager". It misses the negation flip shown above and an answer that
-  gives the domestic per diem for international trips (5 of 6 words match), and it falsely flags
-  2 correct sentences: a paraphrase in different words and a sentence that repeats the
-  question's "$5,000". Those four errors are the method's documented blind spots.
+- **The checker** flags all 7 sentences a human labeled unsupported: the invented 60-day rule,
+  a wrong $25 fee, an uncited opinion, a sentence whose only citation is mistyped, an added
+  "notify your manager", the negation flip shown above, and the domestic per diem given for
+  international trips ("international" where the cited text says "domestic"). It falsely flags
+  2 correct sentences: a paraphrase in different words and a sentence that restates the
+  question's $5,000 inside the $1,000 to $10,000 range but, in its other half, shares too few
+  words with the passage. The original lexical checker (`--checker lexical`) flags 5 of the 7.
+  These fixture sentences guided the new checker, so they are not a fair test of it; the
+  held-out claim cases below are.
+
+### Held-out claim cases
+
+`eval/claims.json` holds 140 sentences written against real handbook chunks, each labelled
+supported or unsupported by reading only the cited chunks: restatements, paraphrases,
+compound sentences, inferences and question numbers, and errors in negation, antonyms,
+modality, numbers, units, dates, swapped attributes and entities. A hash of each case ID put 63
+cases in dev and 77 in test, and the file was committed before any checker change. The checker
+was tuned on dev only.
+
+```bash
+uv run citecheck eval-claims                # the 77 held-out test cases
+uv run citecheck eval-claims --split dev    # the 63 cases used for tuning
+```
+
+```text
+citecheck eval-claims: 77 test cases (48 unsupported, 29 supported) from claims.json
+settings: supported>=0.80, weak>=0.50; flagged means any label but supported
+
+                                lexical     claims
+  caught unsupported            20 of 48    44 of 48
+  false flags on supported      1 of 29     2 of 29
+  accuracy                      0.623       0.922
+
+Paired: only claims right on 24 cases, only lexical right on 1; exact McNemar p = 1.5e-06
+By category (cases judged correctly, lexical / claims)
+  antonym               7 cases     1 / 7
+  compound              7 cases     6 / 6
+  contradiction         5 cases     4 / 5
+  date                  2 cases     1 / 2
+  entity                1 cases     1 / 1
+  modality              1 cases     0 / 1
+  negation              5 cases     1 / 5
+  negation-kept         4 cases     4 / 4
+  number                8 cases     7 / 8
+  paraphrase            9 cases     8 / 8
+  restatement          13 cases    13 / 13
+  swapped-attribute     9 cases     0 / 5
+  unit                  6 cases     2 / 6
+```
+
+On the held-out cases the claim-level checker flags 44 of 48 unsupported sentences where the
+lexical checker flags 20, with 2 false flags on 29 supported sentences instead of 1. Paired on
+the same cases, it is right where the lexical checker is wrong 24 times and the reverse once
+(exact McNemar p = 1.5e-06). On dev the figures are 28 of 34 against 6 of 34, with 7 false flags
+on 29 against 8. The test split was first scored when the checker was frozen after dev tuning:
+43 of 48 and 2 of 29. Two later fixes came from corpus-wide tests (every handbook sentence copied
+verbatim must pass, and swapping a word for its opposite must fail), not from test results; they
+changed one test case, which is now flagged, though for a spurious reason (the verb "owns" matched
+the opposite pair "own"/"another"). [`docs/DESIGN.md`](docs/DESIGN.md#claim-level-checking)
+describes the protocol and every remaining miss.
 
 ## Development
 
@@ -303,7 +373,8 @@ src/citecheck/
   llm.py         ModelClient protocol, Anthropic SDK adapter, tool-call retry
   fixtures.py    replay of hand-written synthetic responses
   answer.py      asks for and validates the cited answer
-  verify.py      citation and lexical-support checks
+  verify.py      citation checks, word overlap and labels
+  claims.py      claim splitting, clause alignment, negation, modality, opposites, quantities
   judge.py       optional LLM judge
   costs.py       usage totals and Decimal cost from a price table
   pipeline.py    retrieve -> answer -> verify -> judge -> account
@@ -321,19 +392,24 @@ smoke test of the CLI (`index`, `search`, `ask`, `ask --dry-run`, `eval`), with 
 
 **Limitations**
 
-- **Lexical support is not entailment.** Word overlap cannot see negation scope, word order or
-  meaning: a sentence that reverses its source with the same words passes, and a faithful
-  paraphrase in different words is flagged. Modal verbs are ignored, so "must" and "may" look
-  the same.
-- **The number rule is blunt.** It catches invented figures, but it also flags a correct
-  sentence that repeats a number from the question.
-- **More citations make passing easier.** Support is measured against the union of the cited
-  passages, so over-citing raises a sentence's score; citation precision in the evaluation is
-  the counterweight.
+- **The claim checks are rules, not entailment.** They catch flipped negations, "must" against
+  "may", opposite words from a fixed list of 37 pairs, and numbers whose value or unit differs
+  from the clause a claim restates. They miss a swapped name or entity ("reported to your
+  manager" for "the People team"), two values swapped inside one source sentence, a rule
+  restated without its restriction, and a contradiction phrased with words outside the opposite
+  list. A faithful paraphrase in different words is still flagged, and so is a correct
+  inference ("60 days before" for "less than 90 days").
+- **Alignment can be ambiguous.** When two cited clauses share equally many words with a claim,
+  the clause checks are skipped and only the word overlap and the quantity search remain.
+- **More citations make passing easier.** Support is still measured against the union of the
+  cited passages. Quantities are compared with the clause a claim restates, which catches a
+  figure borrowed from an extra citation, but extra words still raise the overlap score.
 - **Retrieval is lexical.** BM25 misses synonyms ("staff" vs "employees"), and the Porter
   stemmer conflates some unrelated words ("international" matches "internal" in this corpus).
 - **The evaluation is tiny and self-made.** One author wrote the corpus, questions, gold labels,
-  fixtures and human labels, and calibrated the threshold on the same questions.
+  fixtures and human labels, and calibrated the threshold on the same questions. The claim cases
+  and the new checker also have one author: the split was fixed before tuning, but whoever wrote
+  the rules had read every case, so the held-out figures are optimistic.
 - **Live mode is not exercised in CI.** CI has no API key, so the live adapter is tested only
   with real SDK response types and a stand-in client. No live API calls were made while
   building this. Token counts in fixture mode are estimates.
@@ -345,7 +421,8 @@ smoke test of the CLI (`index`, `search`, `ask`, `ask --dry-run`, `eval`), with 
 
 - Run the evaluation against live models, with the judge as a second annotator and labels from
   people other than the author.
-- Offer an entailment (NLI) model as an alternative checker and compare it with the lexical one.
+- Offer an entailment (NLI) model as an alternative checker and compare it with the claim-level
+  one on `eval/claims.json`, with labels from people other than the author.
 - Hybrid retrieval (BM25 plus embeddings) with reranking; PDF and HTML ingestion; incremental
   indexing.
 - A cost preview before live calls using the token-counting endpoint.

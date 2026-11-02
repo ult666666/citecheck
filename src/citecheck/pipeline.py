@@ -228,7 +228,7 @@ def ask(
         return result("abstained", reason=reason, responses=draft.responses, model_ms=model_ms)
 
     passages_by_id = {passage.chunk_id: passage for passage in retrieval.passages}
-    checks = verify_sentences(draft.sentences, passages_by_id, settings)
+    checks = verify_sentences(draft.sentences, passages_by_id, settings, question=question)
     verified_at = perf_counter()
     responses = draft.responses
     judge = None

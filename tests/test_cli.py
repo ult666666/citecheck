@@ -109,7 +109,7 @@ def test_ask_prints_verdicts_and_the_fixture_notice(
         "Mode: fixture replay: a hand-written synthetic response, not a real model output" in out
     )
     assert "-> supported: " in out
-    assert "-> unsupported: numbers not in the cited passages: 60" in out
+    assert "-> unsupported: the claim says 60 days where the cited text says 30 days" in out
     assert "Summary: 1 supported, 0 weakly supported, 1 unsupported; 0 rejected citations" in out
     assert "Model calls: 1 replayed from fixtures (no API call was made)" in out
     assert "(estimated at ~4 characters per token, not measured)" in out
@@ -392,4 +392,4 @@ def test_eval_summary_only(capsys: pytest.CaptureFixture[str]) -> None:
     code, out, _ = run(capsys, "eval", *args)
     assert code == 0
     assert "labels (S/W/U)" not in out
-    assert "  flagged 5 of 7 sentences labelled unsupported (missed 2)" in out
+    assert "  flagged 7 of 7 sentences labelled unsupported (missed 0)" in out
