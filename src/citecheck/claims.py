@@ -101,7 +101,8 @@ _CLAUSE_BREAK: Final = re.compile(
 )
 _SENTENCE_BREAK: Final = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9$\"'(])|\n+")
 _COMPARATIVE: Final = re.compile(
-    r"\b(?:no|not)\s+(?:more|less|fewer|later|earlier|longer|shorter|greater)\s+than\b", re.I
+    r"\b(?:no|not)\s{1,3}(?:more|less|fewer|later|earlier|longer|shorter|greater)\s{1,3}than\b",
+    re.I,
 )
 _COMPARISON_LOW: Final = re.compile(
     r"\b(?:under|below|within|less than|fewer than|shorter than|up to|at most|no more than)\b"
@@ -159,20 +160,25 @@ _UNIT_MODIFIERS: Final = frozenset(
 )
 _NUMBER: Final = r"\d+(?:,\d{3})*(?:\.\d+)?"
 _QUANTITY: Final = re.compile(
-    rf"(?P<ratio>(?P<rl>\d+(?:\.\d+)?)\s*:\s*(?P<rr>\d)(?!\d))"
+    rf"(?P<ratio>(?P<rl>\d+(?:\.\d+)?)\s{{0,2}}:\s{{0,2}}(?P<rr>\d)(?!\d))"
     rf"|(?P<time>\b(?P<hh>\d{{1,2}}):(?P<mm>\d{{2}})\b)"
     rf"|(?P<money>\$\s?(?P<amount>{_NUMBER}))"
     rf"|(?P<ident>\b(?P<family>[a-z]+)(?P<code>\d+)\b)"
     rf"|(?P<number>\b{_NUMBER}\b)"
     rf"|(?P<word>\b(?:{'|'.join(_WORD_NUMBERS)})\b)"
 )
+# Whitespace inside these patterns is bounded, so matching stays linear on long runs of
+# spaces in untrusted text; a number and its unit are never more than a few spaces apart.
 _RATE: Final = re.compile(
-    r"\s*(?:per|a|an|each|every|for each|for every)\s+(?:calendar\s+)?(?P<period>[a-z]+)"
+    r"\s{0,3}(?:per|a|an|each|every|for each|for every)\s{1,3}(?:calendar\s{1,3})?"
+    r"(?P<period>[a-z]{1,20})"
 )
-_AFTER_NUMBER: Final = re.compile(r"\s*(?:-\s*)?(?P<rest>[a-z%][a-z-]*)")
-_LIST_GAP: Final = re.compile(r"\s*(?:,|and|or|to|-)\s*(?:and\s+|or\s+)?$")
+_AFTER_NUMBER: Final = re.compile(r"\s{0,3}(?:-\s{0,3})?(?P<rest>[a-z%][a-z-]{0,40})")
+_LIST_GAP: Final = re.compile(r"\s{0,3}(?:,|and|or|to|-)\s{0,3}(?:(?:and|or)\s{1,3})?")
+_MAX_LIST_GAP: Final = 12
 _FREQUENCY: Final = re.compile(
-    r"\b(?:every|each|per)\s+(?:calendar\s+)?(minute|hour|day|night|week|month|quarter|year)s?\b"
+    r"\b(?:every|each|per)\s{1,3}(?:calendar\s{1,3})?"
+    r"(minute|hour|day|night|week|month|quarter|year)s?\b"
 )
 
 
@@ -454,6 +460,7 @@ def quantities(text: str) -> list[Quantity]:
         if (
             quantity.kind == following.kind == "count"
             and not quantity.unit
+            and len(gap) <= _MAX_LIST_GAP
             and _LIST_GAP.fullmatch(gap)
         ):
             word = following.text.split(" ", 1)[1] if " " in following.text else ""
@@ -465,7 +472,7 @@ def quantities(text: str) -> list[Quantity]:
                 ),
             )
     result = [quantity for _, _, quantity in found]
-    for match in re.finditer(r"\b(" + "|".join(_MONTHS) + r")\b(?:\s+(\d{1,2})\b)?", folded):
+    for match in re.finditer(r"\b(" + "|".join(_MONTHS) + r")\b(?:\s{1,3}(\d{1,2})\b)?", folded):
         month, day = match.groups()
         if month == "may" and not day:
             continue  # the modal verb
