@@ -24,6 +24,10 @@ All notable changes to this project are documented here. The format follows
 
 - `citecheck eval` now flags 7 of 7 human-unsupported fixture sentences (5 of 7 before) with the
   same 2 false flags. `--checker lexical` reproduces the 0.1.0 numbers exactly.
+- The `serve` page has a plainer layout: numbered sentences with their verdicts, a passage list
+  with aligned scores, and the fixture-mode hint shown only in fixture mode.
+- The README is shorter. Usage and live mode moved to `docs/USAGE.md`, the evaluation reports to
+  `docs/EVALUATION.md`, and the full limits and roadmap to `docs/DESIGN.md`.
 
 ### Fixed
 
