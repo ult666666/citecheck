@@ -1,0 +1,1410 @@
+{
+  "description": "Hand-labelled claim cases for the support checker. Each sentence was written against the cited handbook chunks and labelled supported or unsupported by reading those chunks only. The split field comes from a hash of the case ID and was fixed before any checker change.",
+  "cases": [
+    {
+      "id": "c001",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#health-insurance"
+      ],
+      "sentence": "Coverage begins on the first day of the month after your start date.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c002",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#health-insurance"
+      ],
+      "sentence": "Larkmoor pays 75 percent of the premium for employees.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c003",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#health-insurance"
+      ],
+      "sentence": "Dependents' premiums are 75 percent covered by Larkmoor.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c004",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#open-enrollment"
+      ],
+      "sentence": "Open enrollment runs from October 1 to October 15 each year.",
+      "label": "unsupported",
+      "category": "date"
+    },
+    {
+      "id": "c005",
+      "split": "dev",
+      "chunks": [
+        "people/benefits.md#open-enrollment"
+      ],
+      "sentence": "Coverage can change at any time outside open enrollment.",
+      "label": "unsupported",
+      "category": "contradiction"
+    },
+    {
+      "id": "c006",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#open-enrollment"
+      ],
+      "sentence": "A marriage counts as a qualifying life event that allows a coverage change within 30 days.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c007",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#retirement-plan"
+      ],
+      "sentence": "Company matching contributions vest gradually over four years.",
+      "label": "unsupported",
+      "category": "contradiction"
+    },
+    {
+      "id": "c008",
+      "split": "dev",
+      "chunks": [
+        "people/benefits.md#retirement-plan"
+      ],
+      "sentence": "Matching contributions vest immediately.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c009",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#retirement-plan"
+      ],
+      "sentence": "Larkmoor matches employee 401(k) contributions up to 6 percent of salary.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c010",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#wellness-stipend"
+      ],
+      "sentence": "Unused wellness stipend rolls over to the next month.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c011",
+      "split": "test",
+      "chunks": [
+        "people/benefits.md#wellness-stipend"
+      ],
+      "sentence": "The wellness stipend is $60 per year.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c012",
+      "split": "dev",
+      "chunks": [
+        "people/benefits.md#wellness-stipend"
+      ],
+      "sentence": "The $60 monthly wellness stipend can pay for fitness classes.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c013",
+      "split": "dev",
+      "chunks": [
+        "people/code-of-conduct.md#gifts-from-vendors"
+      ],
+      "sentence": "Gifts above $50 may be kept without telling anyone.",
+      "label": "unsupported",
+      "category": "contradiction"
+    },
+    {
+      "id": "c014",
+      "split": "dev",
+      "chunks": [
+        "people/code-of-conduct.md#gifts-from-vendors"
+      ],
+      "sentence": "Gifts worth more than $50 must be reported to the People team.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c015",
+      "split": "dev",
+      "chunks": [
+        "people/code-of-conduct.md#gifts-from-vendors"
+      ],
+      "sentence": "Gifts above $50 must be reported to your manager.",
+      "label": "unsupported",
+      "category": "entity"
+    },
+    {
+      "id": "c016",
+      "split": "test",
+      "chunks": [
+        "people/code-of-conduct.md#conflicts-of-interest"
+      ],
+      "sentence": "Disclose a conflict of interest within 14 hours of becoming aware of it.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c017",
+      "split": "dev",
+      "chunks": [
+        "people/code-of-conduct.md#conflicts-of-interest"
+      ],
+      "sentence": "A side business is a potential conflict of interest that you must disclose to your manager.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c018",
+      "split": "test",
+      "chunks": [
+        "people/code-of-conduct.md#reporting-concerns"
+      ],
+      "sentence": "The ethics hotline does not accept anonymous reports.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c019",
+      "split": "dev",
+      "chunks": [
+        "people/code-of-conduct.md#reporting-concerns"
+      ],
+      "sentence": "You can report a concern anonymously through the ethics hotline, which is open 24 hours a day.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c020",
+      "split": "test",
+      "chunks": [
+        "people/code-of-conduct.md#no-retaliation"
+      ],
+      "sentence": "Retaliation against someone who reports a concern in good faith is permitted.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c021",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#annual-budget"
+      ],
+      "sentence": "Unused learning budget does not roll over into the next year.",
+      "label": "supported",
+      "category": "negation-kept"
+    },
+    {
+      "id": "c022",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#annual-budget"
+      ],
+      "sentence": "Each employee has a learning budget of $2,500 per calendar year.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c023",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#annual-budget"
+      ],
+      "sentence": "The learning budget is $1,500 per calendar year, and it can pay for books and workshops.",
+      "label": "supported",
+      "category": "compound"
+    },
+    {
+      "id": "c024",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#conferences"
+      ],
+      "sentence": "Lodging for an approved conference is paid from the learning budget.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c025",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#conferences"
+      ],
+      "sentence": "Request manager approval for a conference at least 30 days after it starts.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c026",
+      "split": "dev",
+      "chunks": [
+        "people/learning-budget.md#conferences"
+      ],
+      "sentence": "Conference registration fees are paid from the learning budget.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c027",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#certifications"
+      ],
+      "sentence": "If you fail a certification exam, the company covers two retakes per year.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c028",
+      "split": "dev",
+      "chunks": [
+        "people/learning-budget.md#certifications"
+      ],
+      "sentence": "If you fail a certification exam, Larkmoor pays for one retake that year.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c029",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#paying-and-getting-reimbursed"
+      ],
+      "sentence": "Purchases over $500 need written manager approval after you buy.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c030",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#paying-and-getting-reimbursed"
+      ],
+      "sentence": "Learning purchases over $500 need written approval from your manager before you buy.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c031",
+      "split": "test",
+      "chunks": [
+        "people/onboarding.md#your-first-day"
+      ],
+      "sentence": "New employees pick up their laptop from IT at 10:30 a.m. on their first day.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c032",
+      "split": "test",
+      "chunks": [
+        "people/onboarding.md#your-first-day"
+      ],
+      "sentence": "For remote employees, the laptop arrives at least 2 weeks before the start date.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c033",
+      "split": "dev",
+      "chunks": [
+        "people/onboarding.md#your-first-day"
+      ],
+      "sentence": "Remote employees have their laptop shipped by IT so it arrives at least 2 business days before they start.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c034",
+      "split": "dev",
+      "chunks": [
+        "people/onboarding.md#onboarding-buddy"
+      ],
+      "sentence": "New hires are paired with an onboarding buddy from their own team.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c035",
+      "split": "test",
+      "chunks": [
+        "people/onboarding.md#onboarding-buddy"
+      ],
+      "sentence": "Your onboarding buddy owns your goals.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c036",
+      "split": "test",
+      "chunks": [
+        "people/onboarding.md#required-training"
+      ],
+      "sentence": "Security awareness training must be finished within your first 30 days.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c037",
+      "split": "test",
+      "chunks": [
+        "people/onboarding.md#required-training"
+      ],
+      "sentence": "Code of conduct training must be completed within your first 30 days.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c038",
+      "split": "test",
+      "chunks": [
+        "people/onboarding.md#check-ins"
+      ],
+      "sentence": "Managers check in with new hires at 30, 60 and 90 days.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c039",
+      "split": "dev",
+      "chunks": [
+        "people/onboarding.md#check-ins"
+      ],
+      "sentence": "Managers hold check-ins with new hires at 30, 60 and 120 days.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c040",
+      "split": "dev",
+      "chunks": [
+        "people/parental-leave.md#eligibility"
+      ],
+      "sentence": "The parental leave policy does not apply to adoption.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c041",
+      "split": "dev",
+      "chunks": [
+        "people/parental-leave.md#eligibility"
+      ],
+      "sentence": "Paid parental leave applies equally to adoption and foster placement.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c042",
+      "split": "test",
+      "chunks": [
+        "people/parental-leave.md#leave-length-and-pay"
+      ],
+      "sentence": "Eligible employees receive 16 days of leave at full pay.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c043",
+      "split": "test",
+      "chunks": [
+        "people/parental-leave.md#leave-length-and-pay"
+      ],
+      "sentence": "Eligible employees receive 16 weeks of leave at half pay.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c044",
+      "split": "dev",
+      "chunks": [
+        "people/parental-leave.md#leave-length-and-pay"
+      ],
+      "sentence": "Parental leave lasts 16 weeks at full pay and must be taken within 12 months of the birth.",
+      "label": "supported",
+      "category": "compound"
+    },
+    {
+      "id": "c045",
+      "split": "dev",
+      "chunks": [
+        "people/parental-leave.md#taking-leave-in-blocks"
+      ],
+      "sentence": "Each block of parental leave must be at most 2 weeks long.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c046",
+      "split": "test",
+      "chunks": [
+        "people/parental-leave.md#taking-leave-in-blocks"
+      ],
+      "sentence": "Parental leave can be split into up to 3 blocks of at least 2 weeks each.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c047",
+      "split": "dev",
+      "chunks": [
+        "people/parental-leave.md#returning-to-work"
+      ],
+      "sentence": "After leave, employees must use a phased return.",
+      "label": "unsupported",
+      "category": "modality"
+    },
+    {
+      "id": "c048",
+      "split": "test",
+      "chunks": [
+        "people/parental-leave.md#returning-to-work"
+      ],
+      "sentence": "A phased return lets employees work 60 percent of normal hours for up to 4 weeks at full pay.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c049",
+      "split": "dev",
+      "chunks": [
+        "people/performance-reviews.md#review-cycles"
+      ],
+      "sentence": "Larkmoor runs two review cycles each year, in March and September.",
+      "label": "unsupported",
+      "category": "date"
+    },
+    {
+      "id": "c050",
+      "split": "dev",
+      "chunks": [
+        "people/performance-reviews.md#review-cycles"
+      ],
+      "sentence": "Someone who joined 60 days before a review cycle starts skips that cycle.",
+      "label": "supported",
+      "category": "inference"
+    },
+    {
+      "id": "c051",
+      "split": "dev",
+      "chunks": [
+        "people/performance-reviews.md#promotions"
+      ],
+      "sentence": "Promotions are decided in both the April and October cycles.",
+      "label": "unsupported",
+      "category": "contradiction"
+    },
+    {
+      "id": "c052",
+      "split": "test",
+      "chunks": [
+        "people/performance-reviews.md#promotions"
+      ],
+      "sentence": "The promotion committee always includes at least one person from outside the employee's department.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c053",
+      "split": "test",
+      "chunks": [
+        "people/performance-reviews.md#promotions"
+      ],
+      "sentence": "The promotion committee writes the promotion case.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c054",
+      "split": "test",
+      "chunks": [
+        "people/performance-reviews.md#review-steps"
+      ],
+      "sentence": "Each review includes feedback from 3 to 8 peers.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c055",
+      "split": "test",
+      "chunks": [
+        "people/performance-reviews.md#review-steps"
+      ],
+      "sentence": "Peer feedback comes from 3 to 5 peers chosen with your manager.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c056",
+      "split": "dev",
+      "chunks": [
+        "people/time-off.md#accrual"
+      ],
+      "sentence": "Part-time employees accrue 1.75 days of PTO per month.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c057",
+      "split": "test",
+      "chunks": [
+        "people/time-off.md#accrual"
+      ],
+      "sentence": "Full-time employees earn 21 days of PTO per calendar year.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c058",
+      "split": "dev",
+      "chunks": [
+        "people/time-off.md#carryover"
+      ],
+      "sentence": "Unused PTO beyond the carryover limit is paid out on December 31.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c059",
+      "split": "test",
+      "chunks": [
+        "people/time-off.md#carryover"
+      ],
+      "sentence": "Carried-over PTO days must be used by June 30.",
+      "label": "unsupported",
+      "category": "date"
+    },
+    {
+      "id": "c060",
+      "split": "test",
+      "chunks": [
+        "people/time-off.md#carryover"
+      ],
+      "sentence": "You can carry over at most 5 unused PTO days into the next year.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c061",
+      "split": "test",
+      "chunks": [
+        "people/time-off.md#requesting-time-off"
+      ],
+      "sentence": "For absences longer than three working days, request PTO at least 5 business days in advance.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c062",
+      "split": "test",
+      "chunks": [
+        "people/time-off.md#requesting-time-off"
+      ],
+      "sentence": "Your manager approves or declines a PTO request within 3 business days.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c063",
+      "split": "dev",
+      "chunks": [
+        "people/time-off.md#company-holidays"
+      ],
+      "sentence": "The People team publishes the holiday calendar every January.",
+      "label": "unsupported",
+      "category": "date"
+    },
+    {
+      "id": "c064",
+      "split": "test",
+      "chunks": [
+        "people/time-off.md#company-holidays"
+      ],
+      "sentence": "There are 11 company holidays each year.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c065",
+      "split": "dev",
+      "chunks": [
+        "security/customer-data-access.md#time-limits"
+      ],
+      "sentence": "Access to customer data is granted for at most 72 days.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c066",
+      "split": "test",
+      "chunks": [
+        "security/customer-data-access.md#time-limits"
+      ],
+      "sentence": "Access to customer data is granted for at least 72 hours.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c067",
+      "split": "dev",
+      "chunks": [
+        "security/customer-data-access.md#time-limits"
+      ],
+      "sentence": "Access lasts no more than 72 hours before it is revoked automatically.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c068",
+      "split": "dev",
+      "chunks": [
+        "security/customer-data-access.md#exporting-data"
+      ],
+      "sentence": "Customer data may be copied to personal devices.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c069",
+      "split": "test",
+      "chunks": [
+        "security/customer-data-access.md#exporting-data"
+      ],
+      "sentence": "Customer data can go to a third-party tool only when a signed data processing agreement is in place.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c070",
+      "split": "test",
+      "chunks": [
+        "security/data-retention.md#customer-data"
+      ],
+      "sentence": "Backups containing customer data are purged within 30 days.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c071",
+      "split": "dev",
+      "chunks": [
+        "security/data-retention.md#customer-data"
+      ],
+      "sentence": "After a customer contract ends, the customer's data is deleted from production systems within 30 days.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c072",
+      "split": "dev",
+      "chunks": [
+        "security/data-retention.md#logs"
+      ],
+      "sentence": "Application logs are kept for 13 weeks.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c073",
+      "split": "dev",
+      "chunks": [
+        "security/data-retention.md#logs"
+      ],
+      "sentence": "Security audit logs are kept for 3 years.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c074",
+      "split": "test",
+      "chunks": [
+        "security/devices.md#company-laptops"
+      ],
+      "sentence": "Full-disk encryption on company laptops is optional.",
+      "label": "unsupported",
+      "category": "modality"
+    },
+    {
+      "id": "c075",
+      "split": "test",
+      "chunks": [
+        "security/devices.md#company-laptops"
+      ],
+      "sentence": "Laptops must lock automatically after 5 hours of inactivity.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c076",
+      "split": "dev",
+      "chunks": [
+        "security/devices.md#company-laptops"
+      ],
+      "sentence": "Company laptops are replaced every 3 years.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c077",
+      "split": "dev",
+      "chunks": [
+        "security/devices.md#personal-phones"
+      ],
+      "sentence": "Customer data may be stored on personal devices after enrolling in mobile device management.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c078",
+      "split": "test",
+      "chunks": [
+        "security/devices.md#personal-phones"
+      ],
+      "sentence": "Customer data must never be stored on personal phones.",
+      "label": "supported",
+      "category": "negation-kept"
+    },
+    {
+      "id": "c079",
+      "split": "test",
+      "chunks": [
+        "security/passwords-and-mfa.md#password-manager"
+      ],
+      "sentence": "Passwords you create yourself must be at least 12 characters long.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c080",
+      "split": "dev",
+      "chunks": [
+        "security/passwords-and-mfa.md#password-manager"
+      ],
+      "sentence": "Self-created passwords need at least 14 characters.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c081",
+      "split": "test",
+      "chunks": [
+        "security/passwords-and-mfa.md#sharing-and-rotation"
+      ],
+      "sentence": "Passwords expire every 90 days.",
+      "label": "unsupported",
+      "category": "contradiction"
+    },
+    {
+      "id": "c082",
+      "split": "dev",
+      "chunks": [
+        "security/passwords-and-mfa.md#sharing-and-rotation"
+      ],
+      "sentence": "You may share your password with IT staff.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c083",
+      "split": "test",
+      "chunks": [
+        "security/passwords-and-mfa.md#sharing-and-rotation"
+      ],
+      "sentence": "Passwords do not expire on a schedule.",
+      "label": "supported",
+      "category": "negation-kept"
+    },
+    {
+      "id": "c084",
+      "split": "dev",
+      "chunks": [
+        "security/incident-response.md#response-times"
+      ],
+      "sentence": "A SEV1 must be acknowledged within 30 minutes.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c085",
+      "split": "dev",
+      "chunks": [
+        "security/incident-response.md#response-times"
+      ],
+      "sentence": "SEV3 issues are handled on the next business day.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c086",
+      "split": "test",
+      "chunks": [
+        "security/incident-response.md#postmortems"
+      ],
+      "sentence": "Postmortems focus on individuals rather than causes.",
+      "label": "unsupported",
+      "category": "contradiction"
+    },
+    {
+      "id": "c087",
+      "split": "dev",
+      "chunks": [
+        "security/incident-response.md#postmortems"
+      ],
+      "sentence": "A blameless postmortem is due within 5 business days after a SEV1 or SEV2 is resolved.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c088",
+      "split": "test",
+      "chunks": [
+        "security/phishing.md#phishing-simulations"
+      ],
+      "sentence": "Clicking a simulated phishing link carries a penalty.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c089",
+      "split": "dev",
+      "chunks": [
+        "security/phishing.md#phishing-simulations"
+      ],
+      "sentence": "The security team runs phishing simulations every month.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c090",
+      "split": "dev",
+      "chunks": [
+        "security/phishing.md#phishing-simulations"
+      ],
+      "sentence": "There is no penalty for clicking a simulated phishing link.",
+      "label": "supported",
+      "category": "negation-kept"
+    },
+    {
+      "id": "c091",
+      "split": "test",
+      "chunks": [
+        "engineering/api-style-guide.md#pagination"
+      ],
+      "sentence": "The default page size is 200 items.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c092",
+      "split": "dev",
+      "chunks": [
+        "engineering/api-style-guide.md#pagination"
+      ],
+      "sentence": "The minimum page size is 200 items.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c093",
+      "split": "test",
+      "chunks": [
+        "engineering/api-style-guide.md#pagination"
+      ],
+      "sentence": "List endpoints have a default page size of 50 items and a maximum of 200.",
+      "label": "supported",
+      "category": "compound"
+    },
+    {
+      "id": "c094",
+      "split": "test",
+      "chunks": [
+        "engineering/code-review.md#size-of-changes"
+      ],
+      "sentence": "Keep pull requests over 400 changed lines.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c095",
+      "split": "dev",
+      "chunks": [
+        "engineering/code-review.md#size-of-changes"
+      ],
+      "sentence": "Split larger work into a sequence of smaller pull requests.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c096",
+      "split": "dev",
+      "chunks": [
+        "engineering/deployments.md#canary-releases"
+      ],
+      "sentence": "Every release stays at 5 percent of traffic for 30 hours.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c097",
+      "split": "dev",
+      "chunks": [
+        "engineering/deployments.md#canary-releases"
+      ],
+      "sentence": "A release first goes to 5 percent of traffic for 30 minutes and continues to all traffic if error rates stay normal.",
+      "label": "supported",
+      "category": "compound"
+    },
+    {
+      "id": "c098",
+      "split": "dev",
+      "chunks": [
+        "engineering/deployments.md#rollbacks"
+      ],
+      "sentence": "Rolling back a release requires approval.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c099",
+      "split": "test",
+      "chunks": [
+        "engineering/deployments.md#rollbacks"
+      ],
+      "sentence": "Any engineer can roll back a release without approval.",
+      "label": "supported",
+      "category": "negation-kept"
+    },
+    {
+      "id": "c100",
+      "split": "dev",
+      "chunks": [
+        "engineering/on-call.md#rotation"
+      ],
+      "sentence": "On-call shifts hand off on Fridays at 10:00 US Eastern Time.",
+      "label": "unsupported",
+      "category": "date"
+    },
+    {
+      "id": "c101",
+      "split": "dev",
+      "chunks": [
+        "engineering/on-call.md#rotation"
+      ],
+      "sentence": "Engineers join the on-call rotation after 3 weeks at Larkmoor.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c102",
+      "split": "test",
+      "chunks": [
+        "engineering/on-call.md#compensation"
+      ],
+      "sentence": "The on-call stipend is $400 for each week on call.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c103",
+      "split": "test",
+      "chunks": [
+        "engineering/on-call.md#compensation"
+      ],
+      "sentence": "The on-call stipend is $400 per month.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c104",
+      "split": "dev",
+      "chunks": [
+        "engineering/open-source.md#using-open-source-software"
+      ],
+      "sentence": "AGPL-licensed code may be used in products shipped to customers.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c105",
+      "split": "dev",
+      "chunks": [
+        "engineering/open-source.md#using-open-source-software"
+      ],
+      "sentence": "Permissive licenses such as MIT need a review by Legal before use.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c106",
+      "split": "test",
+      "chunks": [
+        "engineering/open-source.md#using-open-source-software"
+      ],
+      "sentence": "MIT-licensed libraries are pre-approved.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c107",
+      "split": "test",
+      "chunks": [
+        "workplace/communication.md#focus-thursdays"
+      ],
+      "sentence": "Internal meetings are scheduled on Thursdays.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c108",
+      "split": "dev",
+      "chunks": [
+        "workplace/communication.md#focus-thursdays"
+      ],
+      "sentence": "Incident response meetings can still happen on Thursdays.",
+      "label": "supported",
+      "category": "inference"
+    },
+    {
+      "id": "c109",
+      "split": "dev",
+      "chunks": [
+        "workplace/communication.md#response-times"
+      ],
+      "sentence": "Reply to direct chat messages within 4 working days.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c110",
+      "split": "test",
+      "chunks": [
+        "workplace/communication.md#response-times"
+      ],
+      "sentence": "Customer emails get a first response within 1 business day.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c111",
+      "split": "test",
+      "chunks": [
+        "workplace/expenses.md#receipts"
+      ],
+      "sentence": "For expenses under $25, a receipt is required.",
+      "label": "unsupported",
+      "category": "negation"
+    },
+    {
+      "id": "c112",
+      "split": "test",
+      "chunks": [
+        "workplace/expenses.md#receipts"
+      ],
+      "sentence": "Expenses of $25 or more need an itemized receipt.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c113",
+      "split": "dev",
+      "chunks": [
+        "workplace/expenses.md#approval-and-payment"
+      ],
+      "sentence": "Finance reviews each expense report within 5 business days.",
+      "label": "unsupported",
+      "category": "entity"
+    },
+    {
+      "id": "c114",
+      "split": "test",
+      "chunks": [
+        "workplace/expenses.md#approval-and-payment"
+      ],
+      "sentence": "Approved expenses are paid back in the next regular payroll.",
+      "label": "supported",
+      "category": "paraphrase"
+    },
+    {
+      "id": "c115",
+      "split": "test",
+      "chunks": [
+        "workplace/office.md#locations-and-hours"
+      ],
+      "sentence": "Larkmoor has offices in Pittsburgh and Porto.",
+      "label": "unsupported",
+      "category": "entity"
+    },
+    {
+      "id": "c116",
+      "split": "test",
+      "chunks": [
+        "workplace/office.md#locations-and-hours"
+      ],
+      "sentence": "The Lisbon office is open from 7:00 to 20:00 on weekdays.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c117",
+      "split": "test",
+      "chunks": [
+        "workplace/office.md#visitors"
+      ],
+      "sentence": "Visitors may walk around without an escort once they sign in.",
+      "label": "unsupported",
+      "category": "contradiction"
+    },
+    {
+      "id": "c118",
+      "split": "test",
+      "chunks": [
+        "workplace/office.md#visitors"
+      ],
+      "sentence": "Register a visitor at least 24 hours before they arrive.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c119",
+      "split": "dev",
+      "chunks": [
+        "workplace/procurement.md#approval-limits"
+      ],
+      "sentence": "A $700 purchase is under $1,000, so your manager approves it.",
+      "label": "supported",
+      "category": "question-number",
+      "question": "Who approves a $700 purchase?"
+    },
+    {
+      "id": "c120",
+      "split": "dev",
+      "chunks": [
+        "workplace/procurement.md#approval-limits"
+      ],
+      "sentence": "A $12,000 purchase needs approval from your department head and Finance.",
+      "label": "unsupported",
+      "category": "question-number",
+      "question": "Who approves a $12,000 purchase?"
+    },
+    {
+      "id": "c121",
+      "split": "test",
+      "chunks": [
+        "workplace/procurement.md#approval-limits"
+      ],
+      "sentence": "Purchases over $10,000 need one competing quote.",
+      "label": "unsupported",
+      "category": "number"
+    },
+    {
+      "id": "c122",
+      "split": "dev",
+      "chunks": [
+        "workplace/remote-work.md#working-from-another-country"
+      ],
+      "sentence": "You may work from another country for up to 20 weeks per year.",
+      "label": "unsupported",
+      "category": "unit"
+    },
+    {
+      "id": "c123",
+      "split": "dev",
+      "chunks": [
+        "workplace/remote-work.md#working-from-another-country"
+      ],
+      "sentence": "Yes, 15 working days is within the 20-day yearly limit, with approval from the People team.",
+      "label": "supported",
+      "category": "question-number",
+      "question": "Can I work from Spain for 15 working days this year?"
+    },
+    {
+      "id": "c124",
+      "split": "test",
+      "chunks": [
+        "workplace/remote-work.md#home-office-support"
+      ],
+      "sentence": "The $500 home office stipend is paid every year.",
+      "label": "unsupported",
+      "category": "contradiction"
+    },
+    {
+      "id": "c125",
+      "split": "test",
+      "chunks": [
+        "workplace/remote-work.md#home-office-support"
+      ],
+      "sentence": "Hybrid employees receive $500 per month toward home internet.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c126",
+      "split": "dev",
+      "chunks": [
+        "workplace/remote-work.md#home-office-support"
+      ],
+      "sentence": "Remote employees get a one-time $500 home office stipend and $40 per month for home internet.",
+      "label": "supported",
+      "category": "compound"
+    },
+    {
+      "id": "c127",
+      "split": "dev",
+      "chunks": [
+        "workplace/travel.md#booking"
+      ],
+      "sentence": "Late bookings cost less.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c128",
+      "split": "dev",
+      "chunks": [
+        "workplace/travel.md#booking"
+      ],
+      "sentence": "Book travel through the travel portal at least 14 days before departure when possible.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c129",
+      "split": "dev",
+      "chunks": [
+        "workplace/travel.md#hotels"
+      ],
+      "sentence": "The nightly hotel limit in Zurich is $250.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    },
+    {
+      "id": "c130",
+      "split": "dev",
+      "chunks": [
+        "workplace/travel.md#hotels"
+      ],
+      "sentence": "In London the nightly hotel limit is $325.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c131",
+      "split": "test",
+      "chunks": [
+        "workplace/travel.md#rental-cars"
+      ],
+      "sentence": "Accept the rental company's collision damage waiver.",
+      "label": "unsupported",
+      "category": "antonym"
+    },
+    {
+      "id": "c132",
+      "split": "dev",
+      "chunks": [
+        "workplace/travel.md#rental-cars"
+      ],
+      "sentence": "Decline the rental company's collision damage waiver because Larkmoor's insurance covers rental cars.",
+      "label": "supported",
+      "category": "restatement"
+    },
+    {
+      "id": "c133",
+      "split": "test",
+      "chunks": [
+        "workplace/expenses.md#submitting-expenses"
+      ],
+      "sentence": "Submit business expenses in the expense tool within 30 days of the purchase date, and late expenses are reimbursed at half rate.",
+      "label": "unsupported",
+      "category": "compound"
+    },
+    {
+      "id": "c134",
+      "split": "test",
+      "chunks": [
+        "security/devices.md#lost-or-stolen-devices"
+      ],
+      "sentence": "Report a lost laptop to the security team within 1 hour, and the security team ships a replacement the same day.",
+      "label": "unsupported",
+      "category": "compound"
+    },
+    {
+      "id": "c135",
+      "split": "dev",
+      "chunks": [
+        "people/onboarding.md#check-ins"
+      ],
+      "sentence": "Managers hold check-ins with new hires at 30, 60 and 90 days, and someone from HR attends every check-in.",
+      "label": "unsupported",
+      "category": "compound"
+    },
+    {
+      "id": "c136",
+      "split": "test",
+      "chunks": [
+        "engineering/accessibility.md#color-contrast"
+      ],
+      "sentence": "Body text needs a contrast ratio of at least 4.5:1, and large text needs at least 4.5:1 too.",
+      "label": "unsupported",
+      "category": "compound"
+    },
+    {
+      "id": "c137",
+      "split": "test",
+      "chunks": [
+        "engineering/accessibility.md#color-contrast"
+      ],
+      "sentence": "Body text needs a contrast ratio of at least 4.5:1, while large text needs at least 3:1.",
+      "label": "supported",
+      "category": "compound"
+    },
+    {
+      "id": "c138",
+      "split": "test",
+      "chunks": [
+        "workplace/communication.md#weekly-updates"
+      ],
+      "sentence": "Each team posts a written status update by noon US Eastern Time every Friday, and the update is read aloud at the all-hands meeting.",
+      "label": "unsupported",
+      "category": "compound"
+    },
+    {
+      "id": "c139",
+      "split": "dev",
+      "chunks": [
+        "people/learning-budget.md#conferences",
+        "workplace/travel.md#hotels"
+      ],
+      "sentence": "Lodging for an approved conference in London comes from the team's travel budget and is limited to $325 per night.",
+      "label": "supported",
+      "category": "multi-passage"
+    },
+    {
+      "id": "c140",
+      "split": "test",
+      "chunks": [
+        "people/learning-budget.md#annual-budget",
+        "workplace/travel.md#meals-and-per-diem"
+      ],
+      "sentence": "The meal per diem on domestic trips is $1,500.",
+      "label": "unsupported",
+      "category": "swapped-attribute"
+    }
+  ]
+}
