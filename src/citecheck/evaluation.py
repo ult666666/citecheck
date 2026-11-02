@@ -26,22 +26,26 @@ In fixture mode the "model" is a set of hand-written synthetic responses, so the
 numbers demonstrate the harness and the checker, not the quality of any model.
 """
 
+import hashlib
 import json
+import math
 import tempfile
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
+from fractions import Fraction
 from pathlib import Path
 from typing import Any, Final
 
+from citecheck.answer import DraftSentence
 from citecheck.chunking import DEFAULT_MAX_CHUNK_CHARS
-from citecheck.config import Settings
+from citecheck.config import CHECKERS, Checker, Settings
 from citecheck.costs import UsageTotals
 from citecheck.errors import EvalDataError
 from citecheck.fixtures import FIXTURE_NOTICE, FixtureClient, replay_key
 from citecheck.index import Index, build_index
 from citecheck.llm import ClientSource, ModelClient
 from citecheck.pipeline import CheckedAnswer, ask
-from citecheck.verify import LABELS, Label, count_labels
+from citecheck.verify import LABELS, Label, SentenceCheck, check_sentence, count_labels
 
 _QUESTION_KEYS: Final = frozenset({"id", "question", "answerable", "gold_chunks", "notes"})
 _REQUIRED_QUESTION_KEYS: Final = frozenset({"id", "question", "answerable", "gold_chunks"})
@@ -458,3 +462,289 @@ def format_details(report: EvalReport) -> str:
             f"{'ok' if r.abstention_correct else 'WRONG'}"
         )
     return "\n".join(lines)
+
+
+# --- Claim cases: hand-labelled sentences that score the checker directly ---
+
+_CLAIM_KEYS: Final = frozenset(
+    {"id", "split", "chunks", "sentence", "label", "category", "question"}
+)
+_REQUIRED_CLAIM_KEYS: Final = _CLAIM_KEYS - {"question"}
+SPLITS: Final = ("dev", "test")
+
+
+def claim_split(case_id: str) -> str:
+    """Return "dev" for about 40% of case IDs and "test" for the rest.
+
+    The split comes from a SHA-256 of the ID, so it was fixed when the cases
+    were written, before the claims checker was tuned on the dev cases.
+    """
+    return "dev" if int(hashlib.sha256(case_id.encode()).hexdigest(), 16) % 5 < 2 else "test"
+
+
+@dataclass(frozen=True)
+class ClaimCase:
+    """One hand-labelled sentence and the chunks it cites.
+
+    Attributes:
+        id: Case identifier, for example "c017".
+        split: "dev" (used to tune the checker) or "test" (held out).
+        chunks: Cited chunk IDs.
+        sentence: The sentence to check.
+        label: The human label, "supported" or "unsupported".
+        category: What the sentence tests, for example "negation" or "paraphrase".
+        question: The question the sentence answers, when it matters.
+    """
+
+    id: str
+    split: str
+    chunks: tuple[str, ...]
+    sentence: str
+    label: str
+    category: str
+    question: str = ""
+
+
+def load_claim_cases(path: Path) -> list[ClaimCase]:
+    """Load and validate claim cases (``{"cases": [...]}`` JSON).
+
+    Raises:
+        EvalDataError: If the file is malformed, an ID repeats, or a case's
+            split differs from :func:`claim_split` (cases cannot move between
+            dev and test).
+    """
+    if not path.is_file():
+        raise EvalDataError(f"claim case file not found: {path}")
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise EvalDataError(f"{path.name}: invalid JSON ({exc})") from exc
+    if not isinstance(data, dict) or not isinstance(data.get("cases"), list) or not data["cases"]:
+        raise EvalDataError(f'{path.name}: expected an object with a non-empty "cases" list')
+    cases: list[ClaimCase] = []
+    seen: set[str] = set()
+    for position, item in enumerate(data["cases"], start=1):
+        where = f"case #{position}"
+        if not isinstance(item, dict):
+            raise EvalDataError(f"{where} must be a JSON object")
+        if missing := sorted(_REQUIRED_CLAIM_KEYS - set(item)):
+            raise EvalDataError(f"{where} is missing {', '.join(missing)}")
+        if unknown := sorted(set(item) - _CLAIM_KEYS):
+            raise EvalDataError(f"{where} has unknown keys: {', '.join(unknown)}")
+        texts = [item["id"], item["sentence"], item["category"], item.get("question", "x")]
+        if not all(isinstance(value, str) and value.strip() for value in texts):
+            raise EvalDataError(
+                f"{where}: id, sentence, category and question must be non-empty strings"
+            )
+        chunks = item["chunks"]
+        if (
+            not isinstance(chunks, list)
+            or not chunks
+            or not all(isinstance(c, str) and c for c in chunks)
+        ):
+            raise EvalDataError(f"{where}: chunks must be a non-empty list of chunk IDs")
+        if item["label"] not in ("supported", "unsupported"):
+            raise EvalDataError(f"{where}: label must be supported or unsupported")
+        if item["split"] != claim_split(item["id"]):
+            raise EvalDataError(f"{where}: split {item['split']!r} does not match the hash rule")
+        if item["id"] in seen:
+            raise EvalDataError(f"{path.name}: duplicate case id {item['id']!r}")
+        seen.add(item["id"])
+        cases.append(
+            ClaimCase(
+                id=item["id"],
+                split=item["split"],
+                chunks=tuple(chunks),
+                sentence=item["sentence"],
+                label=item["label"],
+                category=item["category"],
+                question=item.get("question", ""),
+            )
+        )
+    return cases
+
+
+def mcnemar_p(left_only: int, right_only: int) -> float:
+    """Exact two-sided McNemar p-value from the two discordant counts.
+
+    Under no difference, each discordant case favors either side with
+    probability 1/2, so the smaller count is the lower tail of
+    Binomial(left_only + right_only, 1/2); the p-value doubles it, capped at 1.
+    """
+    trials = left_only + right_only
+    if trials == 0:
+        return 1.0
+    tail = sum(math.comb(trials, k) for k in range(min(left_only, right_only) + 1))
+    return min(1.0, float(Fraction(2 * tail, 2**trials)))
+
+
+@dataclass(frozen=True)
+class CheckerScore:
+    """How one checker did on a set of claim cases."""
+
+    checker: Checker
+    checks: tuple[SentenceCheck, ...]
+    correct: tuple[bool, ...]
+    unsupported: int
+    caught: int
+    supported: int
+    false_flags: int
+
+    @property
+    def accuracy(self) -> float:
+        """Share of cases where flagged (any label but supported) equals the human label."""
+        return sum(self.correct) / len(self.correct)
+
+
+@dataclass(frozen=True)
+class ClaimEvalReport:
+    """Both checkers scored on the same claim cases."""
+
+    cases_file: str
+    split: str
+    cases: tuple[ClaimCase, ...]
+    settings: Settings
+    scores: dict[Checker, CheckerScore]
+
+    def discordant(self) -> tuple[int, int]:
+        """Return (cases only lexical gets right, cases only claims gets right)."""
+        lexical, claims = self.scores["lexical"].correct, self.scores["claims"].correct
+        return (
+            sum(a and not b for a, b in zip(lexical, claims, strict=True)),
+            sum(b and not a for a, b in zip(lexical, claims, strict=True)),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable dictionary."""
+        lexical_only, claims_only = self.discordant()
+        return {
+            "cases_file": self.cases_file,
+            "split": self.split,
+            "scores": {
+                name: {
+                    "unsupported": score.unsupported,
+                    "caught": score.caught,
+                    "supported": score.supported,
+                    "false_flags": score.false_flags,
+                    "accuracy": round(score.accuracy, 4),
+                }
+                for name, score in self.scores.items()
+            },
+            "mcnemar": {
+                "lexical_only_correct": lexical_only,
+                "claims_only_correct": claims_only,
+                "p_value": mcnemar_p(lexical_only, claims_only),
+            },
+            "cases": [
+                {
+                    "id": case.id,
+                    "category": case.category,
+                    "label": case.label,
+                    **{name: score.checks[n].label for name, score in self.scores.items()},
+                    "claims_reason": self.scores["claims"].checks[n].reason,
+                }
+                for n, case in enumerate(self.cases)
+            ],
+        }
+
+
+def score_checker(
+    cases: Sequence[ClaimCase], index: Index, settings: Settings, checker: Checker
+) -> CheckerScore:
+    """Check every case's sentence against its cited chunks with one checker.
+
+    Raises:
+        EvalDataError: If a case cites a chunk that is not in the index.
+    """
+    chunks = index.chunks(c for case in cases for c in case.chunks)
+    checks = []
+    for case in cases:
+        if unknown := sorted(set(case.chunks) - set(chunks)):
+            raise EvalDataError(f"case {case.id!r} cites unknown chunks: {', '.join(unknown)}")
+        checks.append(
+            check_sentence(
+                1,
+                DraftSentence(text=case.sentence, citations=case.chunks),
+                {c: chunks[c] for c in case.chunks},
+                supported_threshold=settings.supported_threshold,
+                weak_threshold=settings.weak_threshold,
+                checker=checker,
+                question=case.question,
+            )
+        )
+    flagged = [check.label != "supported" for check in checks]
+    wrong = [case.label == "unsupported" for case in cases]
+    return CheckerScore(
+        checker=checker,
+        checks=tuple(checks),
+        correct=tuple(f == w for f, w in zip(flagged, wrong, strict=True)),
+        unsupported=sum(wrong),
+        caught=sum(f and w for f, w in zip(flagged, wrong, strict=True)),
+        supported=len(cases) - sum(wrong),
+        false_flags=sum(f and not w for f, w in zip(flagged, wrong, strict=True)),
+    )
+
+
+def evaluate_claims(
+    corpus_dir: Path,
+    cases_path: Path,
+    settings: Settings,
+    *,
+    split: str = "test",
+    max_chunk_chars: int = DEFAULT_MAX_CHUNK_CHARS,
+) -> ClaimEvalReport:
+    """Score the lexical and claims checkers on one split ("dev", "test" or "all")."""
+    if split not in (*SPLITS, "all"):
+        raise EvalDataError(f"split must be dev, test or all, got {split!r}")
+    cases = tuple(c for c in load_claim_cases(cases_path) if split in ("all", c.split))
+    with tempfile.TemporaryDirectory(prefix="citecheck-claims-") as tmp:
+        index_path = Path(tmp) / "index.sqlite"
+        build_index(corpus_dir, index_path, max_chunk_chars=max_chunk_chars)
+        index = Index(index_path)
+        scores = {checker: score_checker(cases, index, settings, checker) for checker in CHECKERS}
+    return ClaimEvalReport(cases_path.name, split, cases, settings, scores)
+
+
+def _format_p(value: float) -> str:
+    return f"{value:.4f}" if value >= 0.001 else f"{value:.1e}"
+
+
+def format_claim_report(report: ClaimEvalReport, *, details: bool = False) -> str:
+    """Render the claim-case comparison as plain text (deterministic)."""
+    lexical, claims = report.scores["lexical"], report.scores["claims"]
+    lexical_only, claims_only = report.discordant()
+    cfg = report.settings
+    lines = [
+        f"citecheck eval-claims: {len(report.cases)} {report.split} cases ({lexical.unsupported} "
+        f"unsupported, {lexical.supported} supported) from {report.cases_file}",
+        f"settings: supported>={cfg.supported_threshold:.2f}, weak>={cfg.weak_threshold:.2f}; "
+        "flagged means any label but supported",
+        "",
+        f"  {'':<30}{'lexical':<12}claims",
+        f"  {'caught unsupported':<30}{f'{lexical.caught} of {lexical.unsupported}':<12}"
+        f"{claims.caught} of {claims.unsupported}",
+        f"  {'false flags on supported':<30}{f'{lexical.false_flags} of {lexical.supported}':<12}"
+        f"{claims.false_flags} of {claims.supported}",
+        f"  {'accuracy':<30}{lexical.accuracy:<12.3f}{claims.accuracy:.3f}",
+        "",
+        f"Paired: only claims right on {claims_only} cases, only lexical right on {lexical_only}; "
+        f"exact McNemar p = {_format_p(mcnemar_p(lexical_only, claims_only))}",
+        "By category (cases judged correctly, lexical / claims)",
+    ]
+    categories = sorted({case.category for case in report.cases})
+    for category in categories:
+        members = [n for n, case in enumerate(report.cases) if case.category == category]
+        left = sum(lexical.correct[n] for n in members)
+        right = sum(claims.correct[n] for n in members)
+        lines.append(f"  {category:<20}{len(members):>3} cases   {left:>3} / {right:<3}")
+    if details:
+        lines += ["", "Cases where a checker disagrees with the human label"]
+        for n, case in enumerate(report.cases):
+            if lexical.correct[n] and claims.correct[n]:
+                continue
+            lines.append(
+                f"  {case.id} {case.category:<18} human {case.label:<11} lexical "
+                f"{lexical.checks[n].label:<16} claims {claims.checks[n].label}: "
+                f"{claims.checks[n].reason}"
+            )
+    return "\n".join(line.rstrip() for line in lines)

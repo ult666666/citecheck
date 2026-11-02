@@ -1,7 +1,7 @@
 import pytest
 
 from citecheck.answer import DraftSentence
-from citecheck.config import Settings
+from citecheck.config import Checker, Settings
 from citecheck.index import RetrievedChunk
 from citecheck.verify import SentenceCheck, check_sentence, count_labels, verify_sentences
 
@@ -26,13 +26,20 @@ SICK = RetrievedChunk(
 PASSAGES = {chunk.chunk_id: chunk for chunk in (CARRYOVER, SICK)}
 
 
-def check(text: str, *citations: str, supported: float = 0.8, weak: float = 0.5) -> SentenceCheck:
+def check(
+    text: str,
+    *citations: str,
+    supported: float = 0.8,
+    weak: float = 0.5,
+    checker: Checker = "claims",
+) -> SentenceCheck:
     return check_sentence(
         1,
         DraftSentence(text, citations),
         PASSAGES,
         supported_threshold=supported,
         weak_threshold=weak,
+        checker=checker,
     )
 
 
@@ -60,21 +67,33 @@ def test_low_overlap_is_unsupported() -> None:
 
 
 def test_a_number_missing_from_the_sources_overrides_high_overlap() -> None:
-    result = check("Up to 10 unused PTO days carry over.", CARRYOVER.chunk_id)
+    result = check("Up to 10 unused PTO days carry over.", CARRYOVER.chunk_id, checker="lexical")
     assert result.label == "unsupported"
     assert result.unsupported_numbers == ("10",)
     assert result.support == pytest.approx(6 / 7)
     assert result.reason == "numbers not in the cited passages: 10"
 
 
-def test_numbers_are_compared_in_normalized_form() -> None:
+def test_the_claims_checker_names_the_conflicting_value() -> None:
+    result = check("Up to 10 unused PTO days carry over.", CARRYOVER.chunk_id)
+    assert result.label == "unsupported"
+    assert result.reason == "the claim says 10 days where the cited text says 5 days"
+    assert [claim.label for claim in result.claims] == ["unsupported"]
+
+
+@pytest.mark.parametrize(
+    ("checker", "sentence"),
+    [("lexical", "The limit is 1500 per year."), ("claims", "The limit is $1500 per year.")],
+)
+def test_numbers_are_compared_in_normalized_form(checker: Checker, sentence: str) -> None:
     passage = RetrievedChunk("p.md#x", "p.md", "P", 1, 1, "The limit is $1,500.00 per year.", 5)
     result = check_sentence(
         1,
-        DraftSentence("The limit is 1500 per year.", ("p.md#x",)),
+        DraftSentence(sentence, ("p.md#x",)),
         {"p.md#x": passage},
         supported_threshold=0.8,
         weak_threshold=0.5,
+        checker=checker,
     )
     assert result.label == "supported"
 
@@ -130,8 +149,12 @@ def test_a_sentence_can_be_supported_by_two_passages_together() -> None:
     assert check(sentence, SICK.chunk_id, CARRYOVER.chunk_id).label == "supported"
 
 
-def test_negation_flips_are_not_detected() -> None:
-    # Documented limit: word overlap cannot see that this contradicts the source.
+@pytest.mark.parametrize(
+    ("checker", "label"), [("lexical", "supported"), ("claims", "unsupported")]
+)
+def test_negation_flips_fool_only_the_lexical_checker(checker: Checker, label: str) -> None:
+    # Word overlap cannot see that this contradicts the source; the claims
+    # checker compares the sentence with the clause it restates.
     passage = RetrievedChunk(
         "s.md#x", "s.md", "Sick", 1, 1, "A note is required. Sick days do not carry over.", 5
     )
@@ -141,8 +164,9 @@ def test_negation_flips_are_not_detected() -> None:
         {"s.md#x": passage},
         supported_threshold=0.8,
         weak_threshold=0.5,
+        checker=checker,
     )
-    assert result.label == "supported"
+    assert result.label == label
 
 
 def test_thresholds_are_configurable() -> None:

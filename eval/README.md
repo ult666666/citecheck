@@ -39,6 +39,10 @@ and the metrics have something real to catch, and each such file's `note` says s
 | q15 | correct paraphrase in different words | **false flag**: too few shared words |
 | q17 | correct sentence that repeats the question's $5,000 | **false flag**: number not in the passage |
 
+The last column describes the lexical checker (`--checker lexical`). The default claim-level
+checker also catches q03 (only the sentence is negated) and u02 ("international" where the cited
+text says "domestic"), and accepts q17's $5,000 inside its "$1,000 to $10,000 range" comparison.
+
 `expected_labels` holds a human judgment ("supported" or "unsupported") for each sentence,
 written by the same person who wrote the fixtures. The evaluation compares the checker's
 labels with them. That comparison is small and not independent, so treat it as a
@@ -46,3 +50,23 @@ demonstration of the checker's behavior, not as an accuracy estimate.
 
 Questions u03 and u07 have no fixture on purpose: retrieval abstains before any model call.
 q03 and q15 also carry a `judge` response, for demonstrating `citecheck ask --judge`.
+
+## `claims.json`: hand-labelled claim cases
+
+140 sentences that score the support checker directly, without retrieval or a model. Each case
+names one or two real chunk IDs of the handbook, a `sentence`, a human `label` ("supported" or
+"unsupported"), a `category` (what the case tests) and, for three cases, the `question` whose
+number the sentence repeats.
+
+How they were labelled: each sentence was written against its cited chunks, to restate them
+faithfully, paraphrase them, combine two of their facts, or introduce one kind of error (a
+flipped negation, an antonym, a changed modal verb, a wrong number, unit or date, a value moved
+to another attribute, another entity, or an added clause). The label was then decided by reading
+only the cited chunks: "supported" when they state or directly imply everything in the sentence,
+"unsupported" otherwise. The same person wrote the cases, the labels and the checker.
+
+`split` comes from a SHA-256 of the case ID (dev when it is 0 or 1 modulo 5): 63 dev cases, used
+to tune the checker, and 77 test cases, held out. The file was committed before any checker
+change, the loader rejects a case whose split does not match the rule, and a test pins the
+file's hash. `uv run citecheck eval-claims` scores both checkers on the test cases;
+`--split dev` and `--split all` select the others, and `--details` lists every disagreement.

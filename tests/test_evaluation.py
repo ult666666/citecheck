@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -144,6 +145,14 @@ def bundled_report_settings() -> Settings:
     return Settings()
 
 
+def test_the_lexical_checker_keeps_its_original_numbers(bundled_report_settings: Settings) -> None:
+    settings = replace(bundled_report_settings, checker="lexical")
+    s = evaluate(HANDBOOK, QUESTIONS, FixtureClient.from_directory(FIXTURES), settings).summary
+    assert s.label_counts == {"supported": 42, "weakly_supported": 1, "unsupported": 6}
+    assert (s.human_unsupported, s.checker_caught) == (7, 5)
+    assert (s.human_supported, s.checker_false_flags) == (42, 2)
+
+
 def test_bundled_evaluation_numbers(bundled_report_settings: Settings) -> None:
     # These are the numbers quoted in README.md. They come from hand-written
     # synthetic fixtures, so they describe the harness, not a model.
@@ -157,11 +166,11 @@ def test_bundled_evaluation_numbers(bundled_report_settings: Settings) -> None:
     assert s.citation_false_negatives == 2
     assert s.rejected_citations == 2
     assert s.sentences == 49
-    assert s.label_counts == {"supported": 42, "weakly_supported": 1, "unsupported": 6}
+    assert s.label_counts == {"supported": 40, "weakly_supported": 3, "unsupported": 6}
     assert s.abstention_correct == 34
     assert (s.unanswerable_abstained, s.unanswerable_abstained_without_model) == (7, 2)
     assert (s.unanswerable_answered, s.answerable_abstained) == (1, 1)
-    assert (s.human_unsupported, s.checker_caught) == (7, 5)
+    assert (s.human_unsupported, s.checker_caught) == (7, 7)
     assert (s.human_supported, s.checker_false_flags) == (42, 2)
     assert s.usage.calls == 34
     assert s.usage.estimated is True

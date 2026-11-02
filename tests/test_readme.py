@@ -6,7 +6,7 @@ import pytest
 
 from citecheck.cli import format_answer
 from citecheck.config import Settings
-from citecheck.evaluation import evaluate, format_report
+from citecheck.evaluation import evaluate, evaluate_claims, format_claim_report, format_report
 from citecheck.fixtures import FixtureClient
 from citecheck.index import Index, build_index
 from citecheck.pipeline import ask
@@ -49,3 +49,10 @@ def test_documented_prefix_size_matches_the_prompt() -> None:
 def test_documented_metric_values_match_the_pinned_ones() -> None:
     for fragment in ("29 / 33 = 0.879", "29 / 31 = 0.935", "6 / 49 = 0.122", "34 / 36 = 0.944"):
         assert fragment in DESIGN
+
+
+def test_readme_shows_the_current_claim_case_output() -> None:
+    report = evaluate_claims(
+        HANDBOOK, REPO_ROOT / "eval" / "claims.json", Settings(), split="test"
+    )
+    assert format_claim_report(report) in README

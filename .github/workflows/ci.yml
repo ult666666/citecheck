@@ -54,3 +54,6 @@ jobs:
           uv run citecheck ask "What is the deadline for submitting an expense?"
           uv run citecheck ask --dry-run "What is the deadline for submitting an expense?"
           uv run citecheck eval
+          uv run citecheck eval --checker lexical
+          uv run citecheck eval-claims
+          uv run citecheck eval-claims --split dev --details

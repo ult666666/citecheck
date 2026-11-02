@@ -25,6 +25,9 @@ DEFAULT_K: Final = 5
 DEFAULT_MIN_SCORE: Final = 3.0
 DEFAULT_SUPPORTED_THRESHOLD: Final = 0.8
 DEFAULT_WEAK_THRESHOLD: Final = 0.5
+Checker = Literal["claims", "lexical"]
+CHECKERS: Final[tuple[Checker, ...]] = ("claims", "lexical")
+DEFAULT_CHECKER: Final[Checker] = "claims"
 #: Generous on purpose: thinking tokens count toward max_tokens, and a reply
 #: cut off mid tool call is an error, while unused headroom costs nothing.
 DEFAULT_MAX_TOKENS: Final = 16_000
@@ -52,6 +55,8 @@ class Settings:
         cache_system_prompt: Put a prompt-caching breakpoint after the stable
             system prompt and tool definition.
         judge: Run the optional LLM-judge pass after the lexical check.
+        checker: "claims" (claim-level checks, the default) or "lexical" (word
+            overlap and the exact-number rule, the 0.1.0 behavior).
     """
 
     k: int = DEFAULT_K
@@ -64,9 +69,14 @@ class Settings:
     fallback: bool = True
     cache_system_prompt: bool = True
     judge: bool = False
+    checker: Checker = DEFAULT_CHECKER
 
     def __post_init__(self) -> None:
         """Reject out-of-range or inconsistent values."""
+        if self.checker not in CHECKERS:
+            raise ConfigError(
+                f"checker must be one of {', '.join(CHECKERS)}, got {self.checker!r}"
+            )
         if not 1 <= self.k <= MAX_K:
             raise ConfigError(f"k must be between 1 and {MAX_K}, got {self.k}")
         if not math.isfinite(self.min_score) or self.min_score < 0:
