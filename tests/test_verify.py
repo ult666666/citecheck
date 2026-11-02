@@ -98,6 +98,23 @@ def test_numbers_are_compared_in_normalized_form(checker: Checker, sentence: str
     assert result.label == "supported"
 
 
+@pytest.mark.parametrize("checker", ["lexical", "claims"])
+def test_a_wrong_number_written_with_a_suffix_is_unsupported(checker: Checker) -> None:
+    # "15th" is not read as a quantity; the claims checker falls back to the number rule.
+    text = "Timesheets are due on the 5th business day of each month."
+    passage = RetrievedChunk("t.md#x", "t.md", "Timesheets", 1, 1, text, 5)
+    result = check_sentence(
+        1,
+        DraftSentence(text.replace("5th", "15th"), ("t.md#x",)),
+        {"t.md#x": passage},
+        supported_threshold=0.8,
+        weak_threshold=0.5,
+        checker=checker,
+    )
+    assert result.label == "unsupported"
+    assert result.unsupported_numbers == ("15",)
+
+
 def test_sentence_without_citations_is_unsupported() -> None:
     result = check("Up to 5 unused PTO days carry over.")
     assert result.label == "unsupported"

@@ -10,7 +10,9 @@ cannot move the alignment). Four checks then run:
 
 1. **Polarity.** Exactly one of the claim and its aligned clause carries a
    negation ("not", "no", "never", "without", "cannot", ...). Comparisons such
-   as "no more than" are not negations and are removed first.
+   as "no more than" are not negations and are removed first; a comparison
+   that only one side states with "no" ("more than" against "no more than")
+   is flagged separately.
 2. **Modality.** The claim says "must" (or "required", "need") where the clause
    only says "may" (or "can", "optional"), or the reverse. Two negated sides
    ("must not", "may not") are both prohibitions and are not compared.
@@ -22,9 +24,10 @@ cannot move the alignment). Four checks then run:
    identifier such as "SEV1") must appear in the cited passages. The claim is
    flagged if its aligned clause gives a different value in the same slot
    ("30 days" against "90 days"), if only the unit differs ("72 days" against
-   "72 hours"), or if the value is nowhere. A number copied from the question
-   passes only inside a comparison that holds, for example "$5,000 falls in the
-   $1,000 to $10,000 range".
+   "72 hours"), or if the value is nowhere. A number that is not read as a
+   quantity ("9am", "15th") must still appear in the cited passages. A number
+   copied from the question passes only inside a comparison that holds, for
+   example "$5,000 falls in the $1,000 to $10,000 range".
 
 Sentences are split at semicolons and at a comma followed by "and", "but",
 "while", "whereas", "so", "yet" or "plus", when both sides keep at least three
@@ -38,7 +41,14 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Final
 
-from citecheck.textnorm import STOPWORDS, content_terms, normalize_number, stem_lite, tokenize
+from citecheck.textnorm import (
+    STOPWORDS,
+    content_terms,
+    normalize_number,
+    numbers_in,
+    stem_lite,
+    tokenize,
+)
 
 NEGATIONS: Final[frozenset[str]] = frozenset(
     {"not", "no", "never", "without", "none", "nobody", "nothing", "neither", "nor", "cannot"}
@@ -100,8 +110,13 @@ _CLAUSE_BREAK: Final = re.compile(
     r";\s+|,\s+(?=(?:and|but|while|whereas|so|yet|plus|which|except|unless)\s)", re.I
 )
 _SENTENCE_BREAK: Final = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9$\"'(])|\n+")
+_COMPARISON_WORDS: Final = "more|less|fewer|later|earlier|longer|shorter|greater"
 _COMPARATIVE: Final = re.compile(
-    r"\b(?:no|not)\s{1,3}(?:more|less|fewer|later|earlier|longer|shorter|greater)\s{1,3}than\b",
+    rf"\b(?:no|not)\s{{1,3}}(?:{_COMPARISON_WORDS})\s{{1,3}}than\b",
+    re.I,
+)
+_THAN: Final = re.compile(
+    rf"\b(?:(?P<negation>no|not)\s{{1,3}})?(?P<word>{_COMPARISON_WORDS})\s{{1,3}}than\b",
     re.I,
 )
 _COMPARISON_LOW: Final = re.compile(
@@ -159,8 +174,10 @@ _UNIT_MODIFIERS: Final = frozenset(
     | {"competing", "additional", "extra", "full", "more", "new", "approving"}
 )
 _NUMBER: Final = r"\d+(?:,\d{3})*(?:\.\d+)?"
+# A ratio never starts inside a run of digits: without that anchor, every position of a
+# long run followed by a letter retried the whole run, which took quadratic time.
 _QUANTITY: Final = re.compile(
-    rf"(?P<ratio>(?P<rl>\d+(?:\.\d+)?)\s{{0,2}}:\s{{0,2}}(?P<rr>\d)(?!\d))"
+    rf"(?P<ratio>(?<!\d)(?P<rl>\d+(?:\.\d+)?)\s{{0,2}}:\s{{0,2}}(?P<rr>\d)(?!\d))"
     rf"|(?P<time>\b(?P<hh>\d{{1,2}}):(?P<mm>\d{{2}})\b)"
     rf"|(?P<money>\$\s?(?P<amount>{_NUMBER}))"
     rf"|(?P<ident>\b(?P<family>[a-z]+)(?P<code>\d+)\b)"
@@ -384,6 +401,38 @@ def opposite_conflicts(claim: str, clause: str) -> list[str]:
     return found
 
 
+def comparisons(text: str) -> frozenset[str]:
+    """The comparisons in ``text`` ("more than", "no more than"), with "not" written as "no".
+
+    Examples:
+        >>> sorted(comparisons("Not more than 3 days, and later than Friday."))
+        ['later than', 'no more than']
+    """
+    return frozenset(
+        ("no " if match.group("negation") else "") + match.group("word").casefold() + " than"
+        for match in _THAN.finditer(text)
+    )
+
+
+def comparison_conflicts(claim: str, clause: str) -> list[str]:
+    """Comparisons that the claim states with the other polarity: "more than" for "no more than".
+
+    The polarity check removes "no more than" first, because it means "at most" and is
+    not a negation. This check sees a "no" added to or dropped from a comparison.
+
+    Examples:
+        >>> comparison_conflicts("Notes for more than 3 days.", "Notes for no more than 3 days.")
+        ["the claim says 'more than' where the cited text says 'no more than'"]
+    """
+    left, right = comparisons(claim), comparisons(clause)
+    found = []
+    for phrase in sorted(left - right):
+        other = phrase.removeprefix("no ") if phrase.startswith("no ") else f"no {phrase}"
+        if other in right:
+            found.append(f"the claim says '{phrase}' where the cited text says '{other}'")
+    return found
+
+
 def _unit_after(folded: str, original: str, end: int) -> tuple[str, str]:
     """The stemmed unit after a number and the unit word as written, or ("", "").
 
@@ -568,6 +617,13 @@ def _quantity_problems(
         problems.append(f"{quantity.text} is not in the cited passages")
         if quantity.kind in ("count", "money", "percent"):
             missing.append(quantity.value)
+    # A number the quantity reader cannot read, such as "9am", "15th" or "48h", keeps the
+    # lexical checker's number rule: it must appear somewhere in the cited passages.
+    read = {number for quantity in mine for number in numbers_in(quantity.text)}
+    cited = numbers_in(" ".join(clause for clause, _ in clauses))
+    for token in sorted(numbers_in(claim) - read - cited):
+        problems.append(f"{token} is not in the cited passages")
+        missing.append(token)
     return problems, missing, accepted
 
 
@@ -608,6 +664,7 @@ def analyze(sentence: str, passages: Sequence[str], question: str = "") -> tuple
                     f"states {'/'.join(sorted(clause_modes))}: '{aligned}'"
                 )
             problems.extend(opposite_conflicts(claim, source))
+            problems.extend(comparison_conflicts(claim, source))
         number_problems, missing, accepted = _quantity_problems(claim, pair, clauses, question)
         problems.extend(number_problems)
         findings.append(Finding(claim, aligned, tuple(problems), tuple(missing), tuple(accepted)))

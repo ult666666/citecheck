@@ -27,6 +27,14 @@ All notable changes to this project are documented here. The format follows
 
 ### Fixed
 
+- The claim-level checker labelled a sentence supported when it added or dropped the "no" of a
+  comparison ("more than 3 days" for "no more than 3 days"). Such comparisons are now compared
+  with the cited sentence.
+- The claim-level checker ignored numbers followed by letters ("9am", "15th", "48h"), so a wrong
+  one could pass as supported where the lexical number rule flagged it. Such a number must now
+  appear in the cited passages.
+- Reading quantities took quadratic time on a long run of digits followed by a letter, so one
+  long digit string in a passage or an answer could stall verification; it is linear again.
 - Preserve Markdown code-fence boundaries when assigning section titles and citation IDs:
   shorter markers, incorrect closing suffixes and invalid backtick info strings no longer
   expose code headings or hide genuine document sections. Regression tests cover real SQLite
