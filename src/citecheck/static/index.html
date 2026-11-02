@@ -7,87 +7,139 @@
   <style>
     :root {
       color-scheme: light dark;
-      --fg: #1a1a1a;
-      --bg: #ffffff;
-      --muted: #4a4a4a;
-      --border: #767676;
+      --fg: #1c1c1e;
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --muted: #55555c;
+      --line: #e3e3e0;
+      --border: #85858b;
+      --accent: #1d4ed8;
+      --accent-fg: #ffffff;
       --supported: #0b6b2e;
-      --weak: #7a4b00;
-      --unsupported: #a3141e;
-      --focus: #1d4ed8;
+      --weak: #855000;
+      --unsupported: #b3261e;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --fg: #f2f2f2;
-        --bg: #121212;
-        --muted: #c8c8c8;
-        --border: #9a9a9a;
+        --fg: #ececec;
+        --bg: #141415;
+        --surface: #1c1c1e;
+        --muted: #a9a9ae;
+        --line: #303033;
+        --border: #7a7a80;
+        --accent: #8fb0ff;
+        --accent-fg: #0b1430;
         --supported: #6ee79a;
         --weak: #f5c45e;
-        --unsupported: #ff8a8a;
-        --focus: #93b4ff;
+        --unsupported: #ff8f8f;
       }
     }
+    * { box-sizing: border-box; }
     body {
-      margin: 0 auto;
-      max-width: 48rem;
-      padding: 1rem;
-      font: 1rem/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      margin: 0;
+      font: 1rem/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
       color: var(--fg);
       background: var(--bg);
     }
-    label { display: block; font-weight: 600; }
+    header, main, footer { max-width: 46rem; margin: 0 auto; padding: 0 1.25rem; }
+    header { padding-top: 2.75rem; }
+    h1 { margin: 0 0 0.5rem; font-size: 1.6rem; letter-spacing: -0.01em; }
+    h2 { margin: 2.75rem 0 0.5rem; font-size: 1.15rem; }
+    h3 { margin: 2.25rem 0 0.5rem; font-size: 1rem; }
+    p { margin: 0; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.9rem; }
+    #mode { margin-top: 0.5rem; }
+    form { margin-top: 2rem; }
+    label { display: block; margin-bottom: 0.4rem; font-weight: 600; }
     textarea {
-      box-sizing: border-box;
+      display: block;
       width: 100%;
-      padding: 0.5rem;
+      padding: 0.65rem 0.75rem;
       font: inherit;
       color: inherit;
-      background: transparent;
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: 6px;
+      resize: vertical;
     }
+    #question-hint { margin: 0.45rem 0 1rem; }
     button {
-      padding: 0.5rem 1.25rem;
+      padding: 0.55rem 1.4rem;
       font: inherit;
       font-weight: 600;
+      color: var(--accent-fg);
+      background: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
       cursor: pointer;
     }
-    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-    .muted { color: var(--muted); }
+    button:disabled { opacity: 0.65; cursor: progress; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    #status { margin-bottom: 1rem; }
+    #sentences { margin: 0; padding: 0; list-style: none; counter-reset: sentence; }
+    #sentences li {
+      display: grid;
+      grid-template-columns: 1.75rem 1fr;
+      padding: 0.9rem 0;
+      border-top: 1px solid var(--line);
+      counter-increment: sentence;
+    }
+    #sentences li::before {
+      content: counter(sentence) ".";
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    #sentences li:last-child { border-bottom: 1px solid var(--line); }
+    #sentences li > * { grid-column: 2; }
+    .verdict { margin-top: 0.3rem; }
     .label { font-weight: 700; }
     .label.supported { color: var(--supported); }
     .label.weakly_supported { color: var(--weak); }
     .label.unsupported { color: var(--unsupported); }
-    #sentences li { margin-bottom: 0.75rem; }
-    #sentences p { margin: 0.1rem 0; }
-    .passage { white-space: pre-wrap; }
+    .cites { margin-top: 0.25rem; font: 0.85rem/1.5 var(--mono); overflow-wrap: anywhere; }
+    #passages { margin: 0; padding: 0; list-style: none; }
+    #passages li { padding: 0.65rem 0; border-top: 1px solid var(--line); }
+    #passages li:last-child { border-bottom: 1px solid var(--line); }
+    .chunk { font: 600 0.88rem/1.5 var(--mono); overflow-wrap: anywhere; }
+    .meta { font-variant-numeric: tabular-nums; }
+    summary { margin-top: 0.2rem; cursor: pointer; }
+    .passage { margin-top: 0.5rem; white-space: pre-wrap; }
+    footer { margin-top: 3.5rem; padding-bottom: 2rem; }
+    footer a { color: inherit; }
   </style>
 </head>
 <body>
   <header>
     <h1>citecheck</h1>
-    <p>Ask a question about the indexed documents. Each sentence of the answer cites a
-      retrieved passage and is labeled by how well its cited passages support it.</p>
-    <p id="mode" class="muted"></p>
+    <p>Ask a question about the indexed documents. Each sentence of the answer cites passages,
+      and citecheck labels how well those passages support it.</p>
+    <p id="mode" class="muted small"></p>
   </header>
   <main>
     <form id="ask-form">
       <label for="question">Question</label>
       <textarea id="question" name="question" rows="3" maxlength="2000" required
         aria-describedby="question-hint"></textarea>
-      <p id="question-hint" class="muted">In fixture mode only the prepared demo questions have
-        responses (listed in eval/questions.json).</p>
+      <p id="question-hint" class="muted small">Offline, only the demo questions in
+        eval/questions.json have answers, such as "What is the deadline for submitting an
+        expense?"</p>
       <button type="submit">Ask</button>
     </form>
     <section aria-labelledby="result-heading">
       <h2 id="result-heading">Result</h2>
-      <div id="status" role="status" aria-live="polite"></div>
-      <ol id="sentences"></ol>
-      <h3>Passages offered to the model</h3>
-      <ul id="passages"></ul>
+      <p id="status" role="status" aria-live="polite" class="muted">No question asked yet.</p>
+      <ol id="sentences" role="list"></ol>
+      <div id="passages-block" hidden>
+        <h3>Passages offered to the model</h3>
+        <ul id="passages"></ul>
+      </div>
     </section>
   </main>
+  <footer class="muted small">
+    <p>citecheck · <a href="https://github.com/ult666666/citecheck">source</a> · MIT license</p>
+  </footer>
   <script>
     "use strict";
     const LABELS = {
@@ -99,6 +151,7 @@
     const statusEl = document.getElementById("status");
     const sentencesEl = document.getElementById("sentences");
     const passagesEl = document.getElementById("passages");
+    const passagesBlock = document.getElementById("passages-block");
 
     // Every value from the server is inserted with textContent, never as HTML.
     function el(tag, text, className) {
@@ -111,11 +164,13 @@
     fetch("/healthz")
       .then((response) => response.json())
       .then((info) => {
-        const mode = info.mode === "fixture"
-          ? "fixture replay (hand-written synthetic responses, not a real model)"
-          : "live model";
+        const fixture = info.mode === "fixture";
+        const source = fixture
+          ? "Answers are replayed from hand-written fixtures, not generated by a model."
+          : "Answers come from a live model.";
         document.getElementById("mode").textContent =
-          `${info.documents} documents (${info.chunks} chunks) indexed. Responses: ${mode}.`;
+          `${info.documents} documents (${info.chunks} chunks) indexed. ${source}`;
+        document.getElementById("question-hint").hidden = !fixture;
       })
       .catch(() => {});
 
@@ -131,27 +186,29 @@
       for (const sentence of data.sentences) {
         const item = el("li");
         item.append(el("p", sentence.text));
-        const verdict = el("p");
+        const verdict = el("p", undefined, "verdict");
         verdict.append(el("span", LABELS[sentence.label] || sentence.label,
           `label ${sentence.label}`));
         verdict.append(document.createTextNode(`: ${sentence.reason}`));
         item.append(verdict);
         if (sentence.citations.length) {
-          item.append(el("p", `Cites: ${sentence.citations.join(", ")}`, "muted"));
+          item.append(el("p", `Cites ${sentence.citations.join(", ")}`, "cites muted"));
         }
         sentencesEl.append(item);
       }
       for (const passage of data.passages) {
         const item = el("li");
-        item.append(el("strong", passage.chunk_id));
-        item.append(document.createTextNode(
-          ` (score ${passage.score.toFixed(2)}, lines ${passage.start_line}-${passage.end_line})`));
+        item.append(el("p", passage.chunk_id, "chunk"));
+        item.append(el("p",
+          `Score ${passage.score.toFixed(2)} · lines ${passage.start_line}-${passage.end_line}`,
+          "meta muted small"));
         const details = el("details");
-        details.append(el("summary", passage.title));
+        details.append(el("summary", passage.title, "small"));
         details.append(el("p", passage.text, "passage"));
         item.append(details);
         passagesEl.append(item);
       }
+      passagesBlock.hidden = data.passages.length === 0;
     }
 
     form.addEventListener("submit", async (event) => {
@@ -160,9 +217,11 @@
       if (!question) return;
       const button = form.querySelector("button");
       button.disabled = true;
+      statusEl.classList.remove("muted");
       statusEl.textContent = "Checking...";
       sentencesEl.replaceChildren();
       passagesEl.replaceChildren();
+      passagesBlock.hidden = true;
       try {
         const response = await fetch("/api/ask", {
           method: "POST",

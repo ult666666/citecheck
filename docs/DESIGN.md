@@ -637,3 +637,42 @@ independently. None of that makes injection impossible; it makes it visible.
 **What would you build next?** Run the evaluation against live models with labels from other
 people, add an entailment checker and compare it with the claim-level one on `eval/claims.json`,
 and move to hybrid retrieval.
+
+## 13. Limitations and roadmap
+
+The README lists the main limits in one line each. In full:
+
+- The claim checks are rules, not entailment. They catch flipped negations, "must" against "may",
+  opposite words from a fixed list of 37 pairs, and numbers whose value or unit differs from the
+  clause a claim restates. They miss a swapped name or entity ("reported to your manager" for
+  "the People team"), two values swapped inside one source sentence, a rule restated without its
+  restriction, and a contradiction phrased with words outside the opposite list. A faithful
+  paraphrase in different words is still flagged, and so is a correct inference ("60 days
+  before" for "less than 90 days").
+- Alignment can be ambiguous. When two cited clauses share equally many words with a claim, the
+  clause checks are skipped and only the word overlap and the quantity search remain.
+- More citations make passing easier. Support is still measured against the union of the cited
+  passages. Quantities are compared with the clause a claim restates, which catches a figure
+  borrowed from an extra citation, but extra words still raise the overlap score.
+- Retrieval is lexical. BM25 misses synonyms ("staff" vs "employees"), and the Porter stemmer
+  conflates some unrelated words ("international" matches "internal" in this corpus).
+- The evaluation is small and self-made. One author wrote the corpus, questions, gold labels,
+  fixtures and human labels, and calibrated the threshold on the same questions. The claim cases
+  and the claim-level checker also have one author: the split was fixed before tuning, but
+  whoever wrote the rules had read every case, so the held-out figures are optimistic.
+- Live mode is not exercised in CI. CI has no API key, so the live adapter is tested only with
+  real SDK response types and a stand-in client. No live API calls were made while building
+  this, and token counts in fixture mode are estimates.
+- Ingestion is basic: Markdown ATX headings and plain text only (no PDF, HTML or setext
+  headings), a paragraph is never split, the index is rebuilt from scratch, and the text
+  normalization is English-only.
+
+Roadmap:
+
+- Run the evaluation against live models, with the judge as a second annotator and labels from
+  people other than the author.
+- Offer an entailment (NLI) model as an alternative checker and compare it with the claim-level
+  one on `eval/claims.json`, with labels from people other than the author.
+- Hybrid retrieval (BM25 plus embeddings) with reranking; PDF and HTML ingestion; incremental
+  indexing.
+- A cost preview before live calls, using the token-counting endpoint.
