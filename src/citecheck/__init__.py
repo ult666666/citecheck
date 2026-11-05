@@ -5,4 +5,4 @@ lexical checker labels each sentence supported, weakly supported or unsupported
 by the passages it cites.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
