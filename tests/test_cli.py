@@ -46,7 +46,7 @@ def test_version(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as exit_info:
         main(["--version"])
     assert exit_info.value.code == 0
-    assert capsys.readouterr().out.strip() == "citecheck 0.1.0"
+    assert capsys.readouterr().out.strip() == "citecheck 0.2.0"
 
 
 def test_a_command_is_required(capsys: pytest.CaptureFixture[str]) -> None:
@@ -360,7 +360,7 @@ def test_python_dash_m_entry_point(
     with pytest.raises(SystemExit) as exit_info:
         runpy.run_module("citecheck", run_name="__main__")
     assert exit_info.value.code == 0
-    assert "citecheck 0.1.0" in capsys.readouterr().out
+    assert "citecheck 0.2.0" in capsys.readouterr().out
 
 
 def test_default_paths_are_relative_to_the_repository_root() -> None:

@@ -1,6 +1,6 @@
 [project]
 name = "citecheck"
-version = "0.1.0"
+version = "0.2.0"
 description = "Question answering over your documents where every sentence cites a retrieved passage, and a checker flags the claims the sources do not support."
 readme = "README.md"
 license = "MIT"

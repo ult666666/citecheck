@@ -11,13 +11,10 @@ To index and search your own `.md` and `.txt` files, install the CLI from the Gi
 (Python 3.12 or newer):
 
 ```bash
-pip install https://github.com/ult666666/citecheck/releases/download/v0.1.0/citecheck-0.1.0-py3-none-any.whl
+pip install https://github.com/ult666666/citecheck/releases/download/v0.2.0/citecheck-0.2.0-py3-none-any.whl
 citecheck index path/to/docs
 citecheck search "your question"
 ```
-
-The 0.1.0 wheel predates the claim-level checker (see the [changelog](../CHANGELOG.md)). Clone the
-repository to use the current version.
 
 BM25 scores depend on the corpus. On a handful of short files every score can stay below the
 default `--min-score` of 3, so results show as `[below threshold]`. Index more files, or pass a
@@ -27,7 +24,7 @@ Outside a clone, `ask` and `serve` need `--live` and your own API key, because o
 replay the repository's recorded fixtures. `serve` also needs the optional `api` extra:
 
 ```bash
-pip install "citecheck[api] @ https://github.com/ult666666/citecheck/releases/download/v0.1.0/citecheck-0.1.0-py3-none-any.whl"
+pip install "citecheck[api] @ https://github.com/ult666666/citecheck/releases/download/v0.2.0/citecheck-0.2.0-py3-none-any.whl"
 ```
 
 ## More of the offline demo

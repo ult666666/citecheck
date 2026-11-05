@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-05
+
 ### Added
 
 - A claim-level checker, now the default: sentences are split into claims, each claim is aligned
@@ -72,5 +74,6 @@ All notable changes to this project are documented here. The format follows
 - CI on Python 3.12 and 3.13: ruff, mypy (strict), pytest with a 90% coverage floor and an
   offline CLI smoke test.
 
-[Unreleased]: https://github.com/ult666666/citecheck/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ult666666/citecheck/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/ult666666/citecheck/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ult666666/citecheck/releases/tag/v0.1.0
