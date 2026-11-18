@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Claim-level results in `ask --json` and the API include `aligned_citations`. These chunk
+  IDs identify the source passages used for each clause comparison. Repeating an identical
+  rule across sources no longer hides a contradiction by creating a false alignment tie.
+
 ### Fixed
 
 - Overlapping index builds can publish to the same destination. Each build has its own

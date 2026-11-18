@@ -364,8 +364,11 @@ checker (`citecheck.claims`) adds that step and then asks sharper questions:
    rule, plus "which", "except" and "unless"). A claim's aligned clause is the clause sharing the
    most content words with it, where numbers and negations do not count and an opposite word
    counts as its pair, so changing those words cannot move the alignment. The best clause must
-   share at least two words and strictly more than any other clause; on a tie no clause check
-   runs, because a contradiction can only be claimed against the rule the claim restates.
+   share at least two words and strictly more than any competing clause. Repeated copies of
+   the same clause in the same sentence count as one candidate. The checker retains every
+   cited chunk containing that evidence. The same words in different surrounding sentences
+   can have different exceptions, so those remain separate candidates. A tie leaves the
+   claim unaligned.
 3. **Polarity.** Flagged when exactly one side is negated ("not", "no", "never", "without",
    "cannot", ...), and the claim also disagrees with the clause's whole sentence. "No more
    than" and similar comparisons mean "at most", not a negation, so they are removed first.

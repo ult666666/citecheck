@@ -250,13 +250,15 @@ class Finding:
 
     Attributes:
         text: The claim.
-        aligned: The cited clause that shares the most content words with the
-            claim, or "" when none shares any.
+        aligned: The source clause selected for comparison, or "" when the
+            evidence has no unique match.
         problems: One human-readable sentence per failed check.
         missing_numbers: Normalized numbers of quantities found nowhere in the
             cited passages.
         question_numbers: Normalized numbers copied from the question that
             passed the comparison check; they are not claims about the passages.
+        passage_indices: Positions of the cited passages containing the
+            aligned clause in its matching source sentence.
     """
 
     text: str
@@ -264,6 +266,7 @@ class Finding:
     problems: tuple[str, ...]
     missing_numbers: tuple[str, ...]
     question_numbers: tuple[str, ...] = ()
+    passage_indices: tuple[int, ...] = ()
 
 
 def _content_count(text: str) -> int:
@@ -636,7 +639,13 @@ def analyze(sentence: str, passages: Sequence[str], question: str = "") -> tuple
         question: The user's question, whose numbers may be repeated inside a
             comparison that the passages support.
     """
-    clauses = passage_clauses(passages)
+    # A repeated rule supplies the same evidence. Keep different surrounding
+    # sentences distinct because they can change the scope of the clause.
+    sources: dict[tuple[str, str], list[int]] = {}
+    for index, passage in enumerate(passages):
+        for pair in dict.fromkeys(passage_clauses([passage])):
+            sources.setdefault(pair, []).append(index)
+    clauses = tuple(sources)
     findings = []
     for claim in split_claims(sentence):
         pair = align(claim, clauses)
@@ -667,5 +676,14 @@ def analyze(sentence: str, passages: Sequence[str], question: str = "") -> tuple
             problems.extend(comparison_conflicts(claim, source))
         number_problems, missing, accepted = _quantity_problems(claim, pair, clauses, question)
         problems.extend(number_problems)
-        findings.append(Finding(claim, aligned, tuple(problems), tuple(missing), tuple(accepted)))
+        findings.append(
+            Finding(
+                claim,
+                aligned,
+                tuple(problems),
+                tuple(missing),
+                tuple(accepted),
+                tuple(sources.get(pair, ())),
+            )
+        )
     return tuple(findings)

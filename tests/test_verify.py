@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import pytest
 
 from citecheck.answer import DraftSentence
@@ -79,6 +81,45 @@ def test_the_claims_checker_names_the_conflicting_value() -> None:
     assert result.label == "unsupported"
     assert result.reason == "the claim says 10 days where the cited text says 5 days"
     assert [claim.label for claim in result.claims] == ["unsupported"]
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_repeated_evidence_keeps_the_contradiction_and_all_its_sources(reverse: bool) -> None:
+    policy = "Travel receipts are required for all expenses."
+    passages = [
+        replace(SICK, text="Pay invoices promptly. " + policy + " " + policy),
+        replace(CARRYOVER, text=policy + " Supervisors approve reimbursements."),
+    ]
+    if reverse:
+        passages.reverse()
+    cited = tuple(p.chunk_id for p in passages)
+    # One offered but uncited passage contains the same policy too.
+    offered = {p.chunk_id: p for p in [*passages, replace(SICK, chunk_id="other", text=policy)]}
+    result = verify_sentences(
+        [DraftSentence("Travel receipts are not required for all expenses.", (*cited, "absent"))],
+        offered,
+        Settings(),
+    )[0]
+    assert result.label == "unsupported"
+    assert result.rejected_citations == ("absent",)
+    assert result.claims[0].aligned == policy
+    assert result.claims[0].aligned_citations == cited
+
+
+def test_shared_clause_with_distinct_exceptions_has_no_aligned_source() -> None:
+    passages = [
+        replace(SICK, text="Travel receipts are required, except for trips booked by the office."),
+        replace(
+            CARRYOVER, text="Travel receipts are required, except for trips booked by clients."
+        ),
+    ]
+    result = verify_sentences(
+        [DraftSentence("Travel receipts are required.", tuple(p.chunk_id for p in passages))],
+        {p.chunk_id: p for p in passages},
+        Settings(),
+    )[0]
+    assert result.claims[0].aligned == ""
+    assert result.claims[0].aligned_citations == ()
 
 
 @pytest.mark.parametrize(
