@@ -7,11 +7,11 @@
 
 ## Install the CLI
 
-To index and search your own `.md` and `.txt` files, install the CLI from the GitHub release
-(Python 3.12 or newer):
+The current CLI indexes and searches your own `.md` and `.txt` files. With Git installed,
+run the source install in a Python 3.12+ virtual environment.
 
 ```bash
-pip install https://github.com/ult666666/citecheck/releases/download/v0.2.0/citecheck-0.2.0-py3-none-any.whl
+python -m pip install "citecheck @ git+https://github.com/ult666666/citecheck.git@main"
 citecheck index path/to/docs
 citecheck search "your question"
 ```
@@ -24,8 +24,12 @@ Outside a clone, `ask` and `serve` need `--live` and your own API key, because o
 replay the repository's recorded fixtures. `serve` also needs the optional `api` extra:
 
 ```bash
-pip install "citecheck[api] @ https://github.com/ult666666/citecheck/releases/download/v0.2.0/citecheck-0.2.0-py3-none-any.whl"
+python -m pip install "citecheck[api] @ git+https://github.com/ult666666/citecheck.git@main"
 ```
+
+From a source checkout, `python -m pip install ".[api]"` installs the API for that revision.
+The [v0.1.0 release](https://github.com/ult666666/citecheck/releases/tag/v0.1.0) includes a
+prebuilt wheel and checksums for the earlier lexical checker.
 
 ## More of the offline demo
 
