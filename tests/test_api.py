@@ -85,6 +85,10 @@ def test_ask(client: TestClient) -> None:
     assert data["status"] == "answered"
     assert data["source"] == "fixture"
     assert [s["label"] for s in data["sentences"]] == ["supported", "supported"]
+    claim = data["sentences"][0]["claims"][0]
+    assert claim["aligned_citations"] == ["people/time-off.md#carryover"]
+    passage = next(p for p in data["passages"] if p["chunk_id"] == claim["aligned_citations"][0])
+    assert claim["aligned"] in passage["text"]
 
 
 def test_ask_with_judge_and_k(client: TestClient) -> None:

@@ -91,3 +91,9 @@ report checker-vs-human agreement, because the human labels belong to the fixtur
 an HTML page at `/`. The page shows each answer sentence with its label, its reason and its
 citations, and lists the passages offered to the model. It accepts the same `--live`,
 `--checker` and retrieval options as `ask`.
+
+In `citecheck ask --json` and `POST /api/ask`, each entry in `sentences[].claims`
+includes the source clause used for comparison (`aligned`) and the matching chunk IDs
+(`aligned_citations`). Look up those IDs in `passages` for the file path, line span and text.
+An empty list means the checker could not choose a unique source clause. The lexical
+checker reports sentence-level results and leaves `claims` empty.

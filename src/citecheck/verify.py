@@ -60,6 +60,8 @@ class ClaimCheck:
         problems: Failed checks, one sentence each; any problem makes the claim
             unsupported.
         label: "supported", "weakly_supported" or "unsupported".
+        aligned_citations: Validly cited chunk IDs containing the aligned
+            source clause and sentence, in citation order. Empty when unaligned.
     """
 
     text: str
@@ -67,6 +69,7 @@ class ClaimCheck:
     aligned: str
     problems: tuple[str, ...]
     label: Label
+    aligned_citations: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -185,7 +188,7 @@ def check_sentence(
     if checker == "claims":
         return _check_claims(
             sentence.text,
-            [passages[c].text for c in valid],
+            [passages[c] for c in valid],
             source_terms,
             question,
             verdict,
@@ -225,7 +228,7 @@ def _overlap_label(support: float, supported_threshold: float, weak_threshold: f
 
 def _check_claims(
     text: str,
-    passage_texts: Sequence[str],
+    cited: Sequence[RetrievedChunk],
     source_terms: frozenset[str],
     question: str,
     verdict: Callable[..., SentenceCheck],
@@ -236,7 +239,7 @@ def _check_claims(
     weak_threshold: float,
 ) -> SentenceCheck:
     """Label each claim, then give the sentence its worst claim's label."""
-    findings = analyze(text, passage_texts, question)
+    findings = analyze(text, [p.text for p in cited], question)
     claims: list[ClaimCheck] = []
     for finding in findings:
         # A question number accepted inside a comparison is not a claim about the passages.
@@ -248,7 +251,14 @@ def _check_claims(
             else _overlap_label(claim_support, supported_threshold, weak_threshold)
         )
         claims.append(
-            ClaimCheck(finding.text, claim_support, finding.aligned, finding.problems, label)
+            ClaimCheck(
+                finding.text,
+                claim_support,
+                finding.aligned,
+                finding.problems,
+                label,
+                tuple(cited[i].chunk_id for i in finding.passage_indices),
+            )
         )
     worst_index = max(range(len(claims)), key=lambda i: (_SEVERITY[claims[i].label], -i))
     worst = claims[worst_index]
