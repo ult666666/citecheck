@@ -54,6 +54,23 @@ def test_healthz(client: TestClient) -> None:
     }
 
 
+def test_running_server_tracks_rebuilds_and_loss_of_index(tmp_path: Path) -> None:
+    path = tmp_path / "index.sqlite"
+    build_index(HANDBOOK, path)
+    client = TestClient(create_app(index_path=path, client=ScriptedClient([])))
+    corpus = tmp_path / "new"
+    corpus.mkdir()
+    (corpus / "guide.md").write_text("# Policies\n\nPayroll guide.", encoding="utf-8")
+    build_index(corpus, path)
+    result = client.post("/api/search", json={"question": "payroll"}).json()
+    assert result["below_threshold"][0]["chunk_id"] == "guide.md#policies"
+    health = client.get("/healthz")
+    assert health.status_code == 200
+    assert (health.json()["documents"], health.json()["chunks"]) == (1, 1)
+    path.unlink()
+    assert client.get("/healthz").status_code == 503
+
+
 def test_search(client: TestClient) -> None:
     data = client.post("/api/search", json={"question": "hotel limit", "k": 2}).json()
     assert data["query"] == '"hotel" OR "limit"'

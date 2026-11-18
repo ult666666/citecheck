@@ -19,6 +19,7 @@ only comparable within one index: they depend on corpus statistics.
 
 import os
 import sqlite3
+import tempfile
 from collections.abc import Iterable
 from contextlib import closing
 from dataclasses import asdict, dataclass
@@ -130,9 +131,9 @@ def build_index(
 ) -> IndexStats:
     """Chunk every document under ``corpus_dir`` and write a fresh index file.
 
-    The index is written to a temporary file next to ``index_path`` and moved
-    into place only when complete, so an interrupted build never leaves a
-    half-written index behind (and readers never see one).
+    Each build writes to its own temporary directory on the destination
+    filesystem. Readers see a complete index, even when two rebuilds overlap.
+    The last successful replacement wins.
 
     Raises:
         CorpusError: If the documents cannot be loaded.
@@ -141,8 +142,6 @@ def build_index(
     documents = load_corpus(corpus_dir, max_chunk_chars=max_chunk_chars)
     document_rows, chunk_rows = _rows_for(documents)
     index_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = index_path.with_name(index_path.name + ".tmp")
-    tmp_path.unlink(missing_ok=True)
     meta = {
         "schema_version": SCHEMA_VERSION,
         "citecheck_version": __version__,
@@ -151,7 +150,8 @@ def build_index(
         "documents": str(len(document_rows)),
         "chunks": str(len(chunk_rows)),
     }
-    try:
+    with tempfile.TemporaryDirectory(dir=index_path.parent, prefix=".citecheck-") as scratch:
+        tmp_path = Path(scratch) / "index.sqlite"
         with closing(sqlite3.connect(tmp_path)) as conn:
             try:
                 conn.executescript(_SCHEMA)
@@ -168,9 +168,6 @@ def build_index(
             conn.execute("INSERT INTO chunks_fts (chunks_fts) VALUES ('rebuild')")
             conn.commit()
         os.replace(tmp_path, index_path)
-    except BaseException:
-        tmp_path.unlink(missing_ok=True)
-        raise
     return IndexStats(documents=len(document_rows), chunks=len(chunk_rows))
 
 
@@ -190,36 +187,36 @@ class Index:
             IndexFormatError: If ``path`` is not a citecheck index of this version.
         """
         self.path = path
-        if not path.is_file():
-            raise IndexNotFoundError(
-                f"no index found at {path}; build one first with: citecheck index DIR"
-            )
-        self._meta = self._read_meta()
-        version = self._meta.get("schema_version")
-        if version != SCHEMA_VERSION:
-            raise IndexFormatError(
-                f"{path} uses index format {version!r}, but this citecheck reads format "
-                f"{SCHEMA_VERSION!r}; rebuild it with: citecheck index DIR"
-            )
+        self._read_stats()
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self.path.resolve().as_uri() + "?mode=ro", uri=True)
 
-    def _read_meta(self) -> dict[str, str]:
+    def _read_stats(self) -> IndexStats:
+        if not self.path.is_file():
+            raise IndexNotFoundError(
+                f"no index found at {self.path}; build one first with: citecheck index DIR"
+            )
         try:
             with closing(self._connect()) as conn:
-                rows = conn.execute("SELECT key, value FROM meta").fetchall()
+                meta = dict(conn.execute("SELECT key, value FROM meta"))
         except sqlite3.DatabaseError as exc:
             raise IndexFormatError(f"{self.path} is not a citecheck index ({exc})") from exc
-        return {str(key): str(value) for key, value in rows}
+        version = meta.get("schema_version")
+        if version != SCHEMA_VERSION:
+            raise IndexFormatError(
+                f"{self.path} uses index format {version!r}, but this citecheck reads format "
+                f"{SCHEMA_VERSION!r}; rebuild it with: citecheck index DIR"
+            )
+        try:
+            return IndexStats(documents=int(meta["documents"]), chunks=int(meta["chunks"]))
+        except (KeyError, ValueError, TypeError) as exc:
+            raise IndexFormatError(f"{self.path} has invalid index counts") from exc
 
     @property
     def stats(self) -> IndexStats:
-        """Document and chunk counts recorded when the index was built."""
-        return IndexStats(
-            documents=int(self._meta.get("documents", "0")),
-            chunks=int(self._meta.get("chunks", "0")),
-        )
+        """Document and chunk counts of the index currently at this path."""
+        return self._read_stats()
 
     def search(self, match_query: str, limit: int) -> list[RetrievedChunk]:
         """Run an FTS5 ``MATCH`` query and return the best ``limit`` chunks.
