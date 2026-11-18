@@ -350,7 +350,8 @@ def test_serve_without_the_api_extra(
     monkeypatch.setitem(sys.modules, "uvicorn", None)
     code, _, err = run(capsys, "serve", "--db", str(db))
     assert code == 1
-    assert "pip install 'citecheck[api]'" in err
+    assert "python -m pip install '.[api]'" in err
+    assert "https://github.com/ult666666/citecheck/blob/main/docs/USAGE.md#install-the-cli" in err
 
 
 def test_python_dash_m_entry_point(

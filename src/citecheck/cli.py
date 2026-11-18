@@ -470,7 +470,9 @@ def _cmd_serve(args: argparse.Namespace) -> int:
         from citecheck.api import create_app
     except ImportError as exc:
         raise CiteCheckError(
-            "the HTTP API needs optional dependencies: pip install 'citecheck[api]'"
+            "the HTTP API needs the api extra. From a citecheck checkout, run "
+            "python -m pip install '.[api]'. For a standalone installation, see "
+            "https://github.com/ult666666/citecheck/blob/main/docs/USAGE.md#install-the-cli"
         ) from exc
     app = create_app(
         index_path=args.db, client=_client(args), settings=_settings(args), prices=_prices(args)
