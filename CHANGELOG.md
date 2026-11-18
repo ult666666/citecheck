@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Overlapping index builds can publish to the same destination. Each build has its own
+  temporary SQLite file. Readers see a complete index, and unrelated files beside it survive.
+- A running server now reports the current index size at `/healthz` after a rebuild. An
+  unavailable index returns HTTP 503.
+
 ## [0.2.0] - 2026-11-05
 
 ### Added

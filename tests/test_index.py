@@ -32,7 +32,7 @@ def built(make_corpus: CorpusFactory, tmp_path: Path) -> Index:
 def test_build_writes_a_complete_index_and_no_temporary_file(built: Index) -> None:
     assert built.stats.documents == 3
     assert built.stats.chunks == 4
-    assert not built.path.with_name(built.path.name + ".tmp").exists()
+    assert list(built.path.parent.iterdir()) == [built.path]
     assert built.chunk_ids() == {
         "notes.txt#top",
         "pay.md#reimbursement",
@@ -97,7 +97,7 @@ def test_rebuild_replaces_the_previous_index(make_corpus: CorpusFactory, tmp_pat
 def test_failed_build_keeps_the_old_index_and_removes_the_temporary_file(
     make_corpus: CorpusFactory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    path = tmp_path / "index.sqlite"
+    path = tmp_path / "indexes" / "index.sqlite"
     build_index(make_corpus(FILES), path)
 
     def fail(*args: object) -> None:
@@ -106,8 +106,44 @@ def test_failed_build_keeps_the_old_index_and_removes_the_temporary_file(
     monkeypatch.setattr(os, "replace", fail)
     with pytest.raises(OSError, match="disk full"):
         build_index(make_corpus(FILES), path)
-    assert not path.with_name(path.name + ".tmp").exists()
+    assert list(path.parent.iterdir()) == [path]
     assert Index(path).stats.chunks == 4
+
+
+def test_overlapping_rebuilds_each_publish_their_own_index(
+    make_corpus: CorpusFactory, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "indexes" / "index.sqlite"
+    first = make_corpus({"one.txt": "first corpus"})
+    second = tmp_path / "second"
+    second.mkdir()
+    (second / "two.txt").write_text("second corpus", encoding="utf-8")
+    build_index(first, path)
+    (first / "one.txt").rename(first / "three.txt")
+
+    replace = os.replace
+
+    def publish_after_second(source: Path, destination: Path) -> None:
+        # Pause the first finished build immediately before its atomic rename.
+        assert Index(path).chunk_ids() == {"one.txt#top"}
+        with monkeypatch.context() as inner:
+            inner.setattr(os, "replace", replace)
+            build_index(second, path)
+        assert Index(path).chunk_ids() == {"two.txt#top"}
+        replace(source, destination)
+
+    monkeypatch.setattr(os, "replace", publish_after_second)
+    build_index(first, path)
+    assert Index(path).chunk_ids() == {"three.txt#top"}
+    assert list(path.parent.iterdir()) == [path]
+
+
+def test_rebuild_preserves_unrelated_neighbor(make_corpus: CorpusFactory, tmp_path: Path) -> None:
+    path = tmp_path / "index.sqlite"
+    neighbor = tmp_path / "index.sqlite.tmp"
+    neighbor.write_bytes(b"unrelated")
+    build_index(make_corpus(FILES), path)
+    assert neighbor.read_bytes() == b"unrelated"
 
 
 def test_missing_index(tmp_path: Path) -> None:
@@ -137,6 +173,18 @@ def test_an_index_from_another_format_version(built: Index) -> None:
         conn.commit()
     with pytest.raises(IndexFormatError, match=f"reads format '{SCHEMA_VERSION}'"):
         Index(built.path)
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["DELETE FROM meta WHERE key='chunks'", "UPDATE meta SET value='many' WHERE key='documents'"],
+)
+def test_invalid_index_counts_are_format_errors(built: Index, change: str) -> None:
+    with closing(sqlite3.connect(built.path)) as conn:
+        conn.execute(change)
+        conn.commit()
+    with pytest.raises(IndexFormatError, match="invalid index counts"):
+        _ = built.stats
 
 
 @pytest.mark.parametrize(
